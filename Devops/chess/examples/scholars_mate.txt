@@ -1,0 +1,11 @@
+Opening: Scholar's Mate - A Common Beginner Trap
+
+1. e4 - King's pawn opening
+2. e5 - Black responds in kind
+3. Bc4 - Bishop aims at the weak f7 square
+4. Nc6 - Black develops but misses the threat
+5. Qh5 - Queen joins the attack on f7
+6. Nf6 - Black tries to defend but it's too late
+7. Qxf7# - Checkmate! The f7 square was too weak
+
+This demonstrates why beginners should be careful about the f7/f2 pawns - they're only defended by the king initially.

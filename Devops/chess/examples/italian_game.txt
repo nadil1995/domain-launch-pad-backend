@@ -1,0 +1,16 @@
+Opening: Italian Game - Giuoco Piano
+
+1. e4 - White starts with the most popular opening move
+2. e5 - Black establishes a symmetrical position
+3. Nf3 - Developing with a threat to e5
+4. Nc6 - Natural development while defending e5
+5. Bc4 - The Italian Game begins! Targeting f7
+6. Bc5 - Black develops the light-squared bishop symmetrically
+7. c3 - White prepares d4 to fight for the center
+8. Nf6 - Black attacks e4 and completes kingside development
+9. d4 - White strikes in the center
+10. exd4 - Black accepts the challenge
+11. cxd4 - White has a strong pawn center
+12. Bb4+ - Black gives check to disrupt White's smooth development
+
+The Italian Game leads to open, tactical positions where both sides have active pieces.

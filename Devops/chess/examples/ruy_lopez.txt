@@ -1,0 +1,12 @@
+Opening: Ruy Lopez (Spanish Opening)
+
+1. e4 - White opens with the king's pawn, the most popular first move
+2. e5 - Black mirrors White's move, establishing central control
+3. Nf3 - White develops the knight, attacking Black's e5 pawn
+4. Nc6 - Black defends the e5 pawn and develops a piece
+5. Bb5 - The Ruy Lopez! White pins the knight to the king
+6. a6 - Black challenges the bishop with the Morphy Defense
+7. Ba4 - The bishop retreats but maintains pressure
+8. Nf6 - Black develops the kingside knight
+9. O-O - White castles kingside for king safety
+10. Be7 - Black prepares to castle as well

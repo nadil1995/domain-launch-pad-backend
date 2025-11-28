@@ -1,0 +1,11 @@
+TITLE: Sicilian Defense - Dragon Variation
+DESCRIPTION: The most popular and aggressive response to 1.e4, named after the dragon-like pawn structure
+
+MOVES:
+e2e4 c7c5
+g1f3 d7d6
+d2d4 c5d4
+f3d4 g8f6
+b1c3 g7g6
+
+TEXT: The fianchettoed bishop on g7 gives Black a powerful attacking piece

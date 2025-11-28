@@ -1,0 +1,14 @@
+#!/bin/bash
+# Convenient wrapper script to run the chess video generator
+# Usage: ./chess-video -i input.txt -o output.mp4
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PYTHON="$SCRIPT_DIR/.venv/bin/python"
+
+if [ ! -f "$PYTHON" ]; then
+    echo "Error: Virtual environment not found!"
+    echo "Run ./setup.sh first to set up the environment"
+    exit 1
+fi
+
+"$PYTHON" "$SCRIPT_DIR/main.py" "$@"
