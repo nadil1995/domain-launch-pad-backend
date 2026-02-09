@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  plan      Plan     @default(FREE)
+  stripeCustomerId        String?    @unique
+  emailVerified           Boolean    @default(false)
+  emailVerificationToken  String?    @unique
+  emailVerificationExpiry DateTime?
+  passwordResetToken      String?    @unique
+  passwordResetExpiry     DateTime?
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
+
+  apiKeys      ApiKey[]
+  jobs         Job[]
+  usageRecords UsageRecord[]
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String   @default("Default")
+  prefix    String               // first 8 chars: "imgf_abc" (shown to user)
+  hash      String   @unique     // SHA-256 of the full key (used for lookup)
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([hash])
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  userId      String
+  status      JobStatus @default(PENDING)
+  inputFormat String
+  outputFormat String
+  inputKey    String?   // S3 key for uploaded file
+  outputKey   String?   // S3 key for converted file
+  fileSize    Int?      // input bytes
+  error       String?
+  webhookUrl  String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model UsageRecord {
+  id           String   @id @default(cuid())
+  userId       String
+  jobId        String?
+  inputFormat  String
+  outputFormat String
+  inputBytes   Int
+  outputBytes  Int?
+  durationMs   Int?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+enum Plan {
+  FREE
+  PAY_AS_YOU_GO
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}

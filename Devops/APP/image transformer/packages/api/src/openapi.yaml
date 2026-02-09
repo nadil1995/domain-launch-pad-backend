@@ -1,0 +1,919 @@
+openapi: 3.0.3
+info:
+  title: ImageForge API
+  version: 1.0.0
+  description: |
+    ImageForge is a SaaS image conversion API. Convert between PNG, JPG, WEBP, SVG, HEIC, PDF, and RAW formats
+    with options for resizing, quality control, and batch processing.
+
+    ## Authentication
+
+    **Dashboard endpoints** (auth, keys, usage) use **Bearer JWT** tokens obtained from `/auth/login` or `/auth/signup`.
+
+    **Conversion endpoints** (convert, batch, jobs) use **API keys** passed in the `x-api-key` header.
+    Create API keys from the dashboard or via `POST /keys`.
+
+    ## Rate Limits
+
+    - Auth endpoints: 10 requests per 15 minutes
+    - Conversion endpoints: 30 requests per minute
+    - General: 100 requests per 15 minutes
+
+    ## Quotas
+
+    - **FREE** plan: 100 conversions per month
+    - **PAY_AS_YOU_GO**: unlimited (metered billing via Stripe)
+  contact:
+    name: ImageForge Support
+
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local development
+
+tags:
+  - name: Health
+    description: Service health check
+  - name: Auth
+    description: User registration and authentication
+  - name: API Keys
+    description: Manage API keys for conversion endpoints
+  - name: Convert
+    description: Image conversion (single and batch)
+  - name: Jobs
+    description: Poll batch job status
+  - name: Usage
+    description: Usage statistics and quota info
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from /auth/login or /auth/signup
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API key created via POST /keys
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          nullable: true
+        plan:
+          type: string
+          enum: [FREE, PAY_AS_YOU_GO]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, email, plan, createdAt]
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+          description: JWT token for authenticating dashboard requests
+      required: [user, token]
+
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        prefix:
+          type: string
+          description: "First 8 characters of the key (e.g. imgf_abc1)"
+        createdAt:
+          type: string
+          format: date-time
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, name, prefix, createdAt]
+
+    ApiKeyCreated:
+      type: object
+      properties:
+        key:
+          type: string
+          description: "Full API key (only shown once)"
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        prefix:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [key, id, name, prefix, createdAt]
+
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, COMPLETED, FAILED]
+        inputFormat:
+          type: string
+        outputFormat:
+          type: string
+        fileSize:
+          type: integer
+        outputKey:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+        downloadUrl:
+          type: string
+          nullable: true
+          description: Presigned S3 download URL (available when status is COMPLETED)
+        createdAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, status, inputFormat, outputFormat, fileSize, createdAt]
+
+    UsageResponse:
+      type: object
+      properties:
+        period:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date-time
+            to:
+              type: string
+              format: date-time
+          required: [from, to]
+        summary:
+          type: object
+          properties:
+            totalConversions:
+              type: integer
+            totalInputBytes:
+              type: integer
+            totalOutputBytes:
+              type: integer
+            avgDurationMs:
+              type: integer
+            currentMonthCount:
+              type: integer
+          required: [totalConversions, totalInputBytes, totalOutputBytes, avgDurationMs, currentMonthCount]
+        byFormat:
+          type: object
+          additionalProperties:
+            type: integer
+          description: "Conversion count per output format (e.g. { webp: 42, png: 10 })"
+        byDay:
+          type: object
+          additionalProperties:
+            type: integer
+          description: "Conversion count per day (e.g. { '2025-01-15': 5 })"
+      required: [period, summary, byFormat, byDay]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns service status. No authentication required.
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: imageforge-api
+                  timestamp:
+                    type: string
+                    format: date-time
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl http://localhost:4000/api/v1/health
+        - lang: python
+          label: Python
+          source: |
+            import requests
+            r = requests.get("http://localhost:4000/api/v1/health")
+            print(r.json())
+        - lang: javascript
+          label: Node.js
+          source: |
+            const res = await fetch("http://localhost:4000/api/v1/health");
+            console.log(await res.json());
+
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: Create a new account
+      description: Register a new user. Returns a JWT token and user object.
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  example: securepassword123
+                name:
+                  type: string
+                  example: Jane Doe
+              required: [email, password]
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl -X POST http://localhost:4000/api/v1/auth/signup \
+              -H "Content-Type: application/json" \
+              -d '{"email":"user@example.com","password":"securepassword123","name":"Jane Doe"}'
+        - lang: python
+          label: Python
+          source: |
+            import requests
+            r = requests.post("http://localhost:4000/api/v1/auth/signup", json={
+                "email": "user@example.com",
+                "password": "securepassword123",
+                "name": "Jane Doe"
+            })
+            token = r.json()["token"]
+        - lang: javascript
+          label: Node.js
+          source: |
+            const res = await fetch("http://localhost:4000/api/v1/auth/signup", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: "user@example.com",
+                password: "securepassword123",
+                name: "Jane Doe"
+              })
+            });
+            const { token } = await res.json();
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in
+      description: Authenticate with email and password. Returns a JWT token and user object.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: securepassword123
+              required: [email, password]
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl -X POST http://localhost:4000/api/v1/auth/login \
+              -H "Content-Type: application/json" \
+              -d '{"email":"user@example.com","password":"securepassword123"}'
+        - lang: python
+          label: Python
+          source: |
+            import requests
+            r = requests.post("http://localhost:4000/api/v1/auth/login", json={
+                "email": "user@example.com",
+                "password": "securepassword123"
+            })
+            token = r.json()["token"]
+        - lang: javascript
+          label: Node.js
+          source: |
+            const res = await fetch("http://localhost:4000/api/v1/auth/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: "user@example.com",
+                password: "securepassword123"
+              })
+            });
+            const { token } = await res.json();
+
+  /keys:
+    post:
+      tags: [API Keys]
+      summary: Create an API key
+      description: |
+        Generate a new API key for conversion endpoints.
+        The full key is only returned once — store it securely.
+      operationId: createApiKey
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: My App Key
+                  description: Optional friendly name (defaults to "Default")
+      responses:
+        "201":
+          description: API key created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKeyCreated"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl -X POST http://localhost:4000/api/v1/keys \
+              -H "Authorization: Bearer YOUR_JWT" \
+              -H "Content-Type: application/json" \
+              -d '{"name":"My App Key"}'
+        - lang: python
+          label: Python
+          source: |
+            import requests
+            r = requests.post("http://localhost:4000/api/v1/keys",
+                headers={"Authorization": "Bearer YOUR_JWT"},
+                json={"name": "My App Key"})
+            api_key = r.json()["key"]
+        - lang: javascript
+          label: Node.js
+          source: |
+            const res = await fetch("http://localhost:4000/api/v1/keys", {
+              method: "POST",
+              headers: {
+                "Authorization": "Bearer YOUR_JWT",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ name: "My App Key" })
+            });
+            const { key } = await res.json();
+
+    get:
+      tags: [API Keys]
+      summary: List API keys
+      description: Returns all API keys for the authenticated user (keys are masked, only prefix shown).
+      operationId: listApiKeys
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of API keys
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ApiKey"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl http://localhost:4000/api/v1/keys \
+              -H "Authorization: Bearer YOUR_JWT"
+
+  /keys/{id}:
+    delete:
+      tags: [API Keys]
+      summary: Revoke an API key
+      description: Permanently revokes an API key. It can no longer be used for authentication.
+      operationId: revokeApiKey
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: API key ID
+      responses:
+        "200":
+          description: Key revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: API key revoked
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: API key not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl -X DELETE http://localhost:4000/api/v1/keys/KEY_ID \
+              -H "Authorization: Bearer YOUR_JWT"
+
+  /convert:
+    post:
+      tags: [Convert]
+      summary: Convert a single image
+      description: |
+        Upload a single file and convert it synchronously.
+        Returns the converted image as a binary response.
+
+        **Supported input formats:** PNG, JPG, WEBP, HEIC, SVG, PDF, RAW (CR2, NEF, ARW, DNG)
+
+        **Supported output formats:** `png`, `jpg`, `webp`, `svg`
+
+        Response includes custom headers:
+        - `X-Image-Width` / `X-Image-Height` — output dimensions
+        - `X-Quota-Remaining` / `X-Quota-Limit` — remaining quota (FREE plan)
+      operationId: convertSingle
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to convert
+                outputFormat:
+                  type: string
+                  enum: [png, jpg, webp, svg]
+                  description: Target output format
+                quality:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  description: "Output quality (1-100, default: 80)"
+                width:
+                  type: integer
+                  description: Resize to width (px)
+                height:
+                  type: integer
+                  description: Resize to height (px)
+                fit:
+                  type: string
+                  enum: [cover, contain, fill, inside, outside]
+                  description: "Resize fit mode (default: cover)"
+                dpi:
+                  type: integer
+                  description: Output DPI (for PDF rasterization)
+                page:
+                  type: integer
+                  description: "PDF page number (0-indexed, default: 0)"
+                lossless:
+                  type: boolean
+                  description: Enable lossless compression (WebP only)
+              required: [file, outputFormat]
+      responses:
+        "200":
+          description: Converted image
+          headers:
+            X-Image-Width:
+              schema:
+                type: integer
+              description: Output image width in pixels
+            X-Image-Height:
+              schema:
+                type: integer
+              description: Output image height in pixels
+            X-Quota-Remaining:
+              schema:
+                type: integer
+              description: Remaining conversions this month (FREE plan)
+            X-Quota-Limit:
+              schema:
+                type: integer
+              description: Monthly conversion limit (FREE plan)
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Missing file or outputFormat
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit or quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl -X POST http://localhost:4000/api/v1/convert \
+              -H "x-api-key: YOUR_API_KEY" \
+              -F "file=@photo.jpg" \
+              -F "outputFormat=webp" \
+              -F "quality=85" \
+              --output converted.webp
+        - lang: python
+          label: Python
+          source: |
+            import requests
+
+            with open("photo.jpg", "rb") as f:
+                r = requests.post(
+                    "http://localhost:4000/api/v1/convert",
+                    headers={"x-api-key": "YOUR_API_KEY"},
+                    files={"file": f},
+                    data={"outputFormat": "webp", "quality": "85"}
+                )
+            with open("converted.webp", "wb") as out:
+                out.write(r.content)
+        - lang: javascript
+          label: Node.js
+          source: |
+            import fs from "fs";
+
+            const form = new FormData();
+            form.append("file", fs.createReadStream("photo.jpg"));
+            form.append("outputFormat", "webp");
+            form.append("quality", "85");
+
+            const res = await fetch("http://localhost:4000/api/v1/convert", {
+              method: "POST",
+              headers: { "x-api-key": "YOUR_API_KEY" },
+              body: form
+            });
+            const buffer = Buffer.from(await res.arrayBuffer());
+            fs.writeFileSync("converted.webp", buffer);
+
+  /convert/batch:
+    post:
+      tags: [Convert]
+      summary: Batch convert images
+      description: |
+        Upload multiple files for asynchronous conversion.
+        Returns immediately with a batch ID and job IDs (HTTP 202).
+        Poll individual jobs via `GET /jobs/{id}` for status and download URLs.
+      operationId: convertBatch
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Image files to convert (up to 10)
+                outputFormat:
+                  type: string
+                  enum: [png, jpg, webp, svg]
+                  description: Target output format
+                quality:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                width:
+                  type: integer
+                height:
+                  type: integer
+                fit:
+                  type: string
+                  enum: [cover, contain, fill, inside, outside]
+                webhookUrl:
+                  type: string
+                  format: uri
+                  description: URL to POST when each job completes
+              required: [files, outputFormat]
+      responses:
+        "202":
+          description: Batch accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batchId:
+                    type: string
+                    format: uuid
+                  jobCount:
+                    type: integer
+                  jobs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        status:
+                          type: string
+                          example: PENDING
+                        originalName:
+                          type: string
+                required: [batchId, jobCount, jobs]
+        "400":
+          description: Missing files or outputFormat
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit or quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl -X POST http://localhost:4000/api/v1/convert/batch \
+              -H "x-api-key: YOUR_API_KEY" \
+              -F "files=@image1.png" \
+              -F "files=@image2.jpg" \
+              -F "outputFormat=webp" \
+              -F "quality=85"
+        - lang: python
+          label: Python
+          source: |
+            import requests
+
+            files = [
+                ("files", open("image1.png", "rb")),
+                ("files", open("image2.jpg", "rb")),
+            ]
+            r = requests.post(
+                "http://localhost:4000/api/v1/convert/batch",
+                headers={"x-api-key": "YOUR_API_KEY"},
+                files=files,
+                data={"outputFormat": "webp", "quality": "85"}
+            )
+            batch = r.json()
+            print(f"Batch {batch['batchId']}: {batch['jobCount']} jobs")
+
+  /jobs/{id}:
+    get:
+      tags: [Jobs]
+      summary: Get job status
+      description: |
+        Poll a batch job's status. When the job completes,
+        a presigned download URL is included in the response.
+      operationId: getJob
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Job ID
+      responses:
+        "200":
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "401":
+          description: Missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl http://localhost:4000/api/v1/jobs/JOB_ID \
+              -H "x-api-key: YOUR_API_KEY"
+        - lang: python
+          label: Python
+          source: |
+            import requests
+
+            r = requests.get(
+                f"http://localhost:4000/api/v1/jobs/{job_id}",
+                headers={"x-api-key": "YOUR_API_KEY"}
+            )
+            job = r.json()
+            if job["status"] == "COMPLETED":
+                print(f"Download: {job['downloadUrl']}")
+
+  /usage:
+    get:
+      tags: [Usage]
+      summary: Get usage statistics
+      description: |
+        Returns conversion usage stats for the authenticated user,
+        including totals, per-format breakdown, daily counts, and current month quota usage.
+      operationId: getUsage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: "Start of period (default: start of current month)"
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: "End of period (default: now)"
+      responses:
+        "200":
+          description: Usage statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageResponse"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-codeSamples:
+        - lang: curl
+          label: cURL
+          source: |
+            curl "http://localhost:4000/api/v1/usage?from=2025-01-01T00:00:00Z" \
+              -H "Authorization: Bearer YOUR_JWT"
+        - lang: python
+          label: Python
+          source: |
+            import requests
+
+            r = requests.get(
+                "http://localhost:4000/api/v1/usage",
+                headers={"Authorization": "Bearer YOUR_JWT"},
+                params={"from": "2025-01-01T00:00:00Z"}
+            )
+            usage = r.json()
+            print(f"Total: {usage['summary']['totalConversions']} conversions")

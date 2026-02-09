@@ -1,0 +1,89 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: imageforge
+      POSTGRES_PASSWORD: imageforge
+      POSTGRES_DB: imageforge
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+        sleep 3;
+        mc alias set local http://minio:9000 minioadmin minioadmin;
+        mc mb --ignore-existing local/imageforge;
+        exit 0;
+      "
+
+  api:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    command: >
+      sh -c "npx prisma migrate deploy --schema=./prisma/schema.prisma && node dist/index.js"
+
+  worker:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    env_file:
+      - .env
+    command: ["node", "dist/worker.js"]
+
+  web:
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:

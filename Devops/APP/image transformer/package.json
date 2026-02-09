@@ -1,0 +1,16 @@
+{
+  "name": "imageforge",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w packages/web",
+    "dev:api": "npm run dev -w packages/api",
+    "build:web": "npm run build -w packages/web",
+    "build:api": "npm run build -w packages/api",
+    "dev": "npm run dev:api",
+    "dev:worker": "npm run dev:worker -w packages/api"
+  }
+}
