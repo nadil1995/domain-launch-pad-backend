@@ -5,6 +5,10 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/home/screens/home_screen.dart';
+import '../../features/restaurant/screens/restaurant_detail_screen.dart';
+import '../../features/menu/screens/menu_item_detail_screen.dart';
+import '../../features/reviews/screens/write_review_screen.dart';
+import '../../features/restaurant/screens/saved_screen.dart';
 
 // GoRouter provider
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -50,7 +54,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/home',
             builder: (context, state) => const HomeScreen(),
           ),
-          // Additional shell routes (Map, Search, Saved, Profile) will be added here
+          GoRoute(
+            path: '/map',
+            builder: (context, state) => const _MapScreen(),
+          ),
+          GoRoute(
+            path: '/search',
+            builder: (context, state) => const _SearchScreen(),
+          ),
+          GoRoute(
+            path: '/saved',
+            builder: (context, state) => const SavedScreen(),
+          ),
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const _ProfileScreen(),
+          ),
         ],
       ),
 
@@ -59,14 +78,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/restaurant/:id',
         builder: (context, state) {
           final restaurantId = state.pathParameters['id']!;
-          return _PlaceholderScreen(title: 'Restaurant Detail: $restaurantId');
+          return RestaurantDetailScreen(restaurantId: restaurantId);
         },
       ),
       GoRoute(
         path: '/menu-item/:id',
         builder: (context, state) {
           final menuItemId = state.pathParameters['id']!;
-          return _PlaceholderScreen(title: 'Menu Item: $menuItemId');
+          return MenuItemDetailScreen(menuItemId: menuItemId);
+        },
+      ),
+      GoRoute(
+        path: '/review/:menuItemId/:restaurantId',
+        builder: (context, state) {
+          final menuItemId = state.pathParameters['menuItemId']!;
+          final restaurantId = state.pathParameters['restaurantId']!;
+          return WriteReviewScreen(
+            menuItemId: menuItemId,
+            restaurantId: restaurantId,
+          );
         },
       ),
     ],
@@ -130,17 +160,67 @@ class _MainShellState extends State<_MainShell> {
   }
 }
 
-// Placeholder for future screens
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
+// Placeholder screens for upcoming features
 
-  const _PlaceholderScreen({required this.title});
+class _MapScreen extends StatelessWidget {
+  const _MapScreen();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: Text(title)),
+      appBar: AppBar(title: const Text('Nearby Restaurants')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            const Text('Map feature coming soon!'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchScreen extends StatelessWidget {
+  const _SearchScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Search')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            const Text('Search feature coming soon!'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileScreen extends StatelessWidget {
+  const _ProfileScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.person, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            const Text('Profile feature coming soon!'),
+          ],
+        ),
+      ),
     );
   }
 }
