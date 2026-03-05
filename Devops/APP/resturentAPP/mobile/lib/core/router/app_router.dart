@@ -11,6 +11,7 @@ import '../../features/reviews/screens/write_review_screen.dart';
 import '../../features/restaurant/screens/saved_screen.dart';
 import '../../features/restaurant/screens/search_screen.dart';
 import '../../features/auth/screens/profile_screen.dart';
+import '../../features/map/screens/map_screen.dart';
 
 // GoRouter provider
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -58,7 +59,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/map',
-            builder: (context, state) => const _MapScreen(),
+            builder: (context, state) => const MapScreen(),
           ),
           GoRoute(
             path: '/search',
@@ -169,27 +170,6 @@ class _MainShellState extends State<_MainShell> {
 }
 
 // Placeholder screens for upcoming features
-
-class _MapScreen extends StatelessWidget {
-  const _MapScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Nearby Restaurants')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.map, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            const Text('Map feature coming soon!'),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _OwnerDashboardScreen extends StatelessWidget {
   const _OwnerDashboardScreen();
