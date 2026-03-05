@@ -9,6 +9,8 @@ import '../../features/restaurant/screens/restaurant_detail_screen.dart';
 import '../../features/menu/screens/menu_item_detail_screen.dart';
 import '../../features/reviews/screens/write_review_screen.dart';
 import '../../features/restaurant/screens/saved_screen.dart';
+import '../../features/restaurant/screens/search_screen.dart';
+import '../../features/auth/screens/profile_screen.dart';
 
 // GoRouter provider
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -60,7 +62,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/search',
-            builder: (context, state) => const _SearchScreen(),
+            builder: (context, state) => const SearchScreen(),
           ),
           GoRoute(
             path: '/saved',
@@ -68,7 +70,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/profile',
-            builder: (context, state) => const _ProfileScreen(),
+            builder: (context, state) => const ProfileScreen(),
           ),
         ],
       ),
@@ -98,6 +100,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             restaurantId: restaurantId,
           );
         },
+      ),
+
+      // Owner routes
+      GoRoute(
+        path: '/owner/dashboard',
+        builder: (context, state) => const _OwnerDashboardScreen(),
       ),
     ],
   );
@@ -183,41 +191,20 @@ class _MapScreen extends StatelessWidget {
   }
 }
 
-class _SearchScreen extends StatelessWidget {
-  const _SearchScreen();
+class _OwnerDashboardScreen extends StatelessWidget {
+  const _OwnerDashboardScreen();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Search')),
+      appBar: AppBar(title: const Text('Restaurant Dashboard')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search, size: 64, color: Colors.grey[400]),
+            Icon(Icons.dashboard, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
-            const Text('Search feature coming soon!'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileScreen extends StatelessWidget {
-  const _ProfileScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.person, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            const Text('Profile feature coming soon!'),
+            const Text('Owner dashboard coming soon!'),
           ],
         ),
       ),
