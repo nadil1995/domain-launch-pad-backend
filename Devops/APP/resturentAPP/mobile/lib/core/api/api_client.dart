@@ -5,7 +5,14 @@ class ApiClient {
   final Dio _dio;
   final _secureStorage = const FlutterSecureStorage();
 
+  // Change this based on your environment:
+  // macOS/Windows (Docker Desktop): http://localhost:3000/api
+  // Android Emulator: http://10.0.2.2:3000/api
+  // Physical Device: http://<YOUR_IP>:3000/api (e.g., http://192.168.1.100:3000/api)
+  static const String _baseUrl = 'http://localhost:3000/api';
+
   ApiClient({Dio? dio}) : _dio = dio ?? Dio() {
+    _dio.options.baseUrl = _baseUrl;
     _setupInterceptors();
   }
 
@@ -34,20 +41,21 @@ class ApiClient {
   }
 
   // Auth requests
-  Future<Response> register(String email, String name, String password) {
+  Future<Response> register(String email, String name, String password, {String role = 'CUSTOMER'}) {
     return _dio.post(
-      'http://localhost:3000/api/auth/register',
+      '/auth/register',
       data: {
         'email': email,
         'name': name,
         'password': password,
+        'role': role,
       },
     );
   }
 
   Future<Response> login(String email, String password) {
     return _dio.post(
-      'http://localhost:3000/api/auth/login',
+      '/auth/login',
       data: {
         'email': email,
         'password': password,
@@ -57,7 +65,7 @@ class ApiClient {
 
   Future<Response> googleSignIn(String googleId, String email, String name, String? avatar) {
     return _dio.post(
-      'http://localhost:3000/api/auth/google',
+      '/auth/google',
       data: {
         'googleId': googleId,
         'email': email,
@@ -109,7 +117,7 @@ class ApiClient {
     double? radius,
   }) {
     return _dio.get(
-      'http://localhost:3000/api/restaurants',
+      '/restaurants',
       queryParameters: {
         if (name != null) 'name': name,
         if (cuisine != null) 'cuisine': cuisine,
@@ -121,12 +129,12 @@ class ApiClient {
   }
 
   Future<Response> getRestaurantById(String id) {
-    return _dio.get('http://localhost:3000/api/restaurants/$id');
+    return _dio.get('/restaurants/$id');
   }
 
   Future<Response> getTrendingRestaurants({double? lat, double? lng}) {
     return _dio.get(
-      'http://localhost:3000/api/restaurants/trending/all',
+      '/restaurants/trending/all',
       queryParameters: {
         if (lat != null) 'lat': lat,
         if (lng != null) 'lng': lng,
@@ -140,23 +148,23 @@ class ApiClient {
     required double lng,
   }) {
     return _dio.get(
-      'http://localhost:3000/api/restaurants/recommended/$userId',
+      '/restaurants/recommended/$userId',
       queryParameters: {'lat': lat, 'lng': lng},
     );
   }
 
   // Menu requests
   Future<Response> getMenuItems(String restaurantId) {
-    return _dio.get('http://localhost:3000/api/menu/restaurant/$restaurantId');
+    return _dio.get('/menu/restaurant/$restaurantId');
   }
 
   Future<Response> getMenuItemById(String id) {
-    return _dio.get('http://localhost:3000/api/menu/$id');
+    return _dio.get('/menu/$id');
   }
 
   // Review requests
   Future<Response> getReviews(String menuItemId) {
-    return _dio.get('http://localhost:3000/api/reviews/item/$menuItemId');
+    return _dio.get('/reviews/item/$menuItemId');
   }
 
   Future<Response> createReview({
@@ -166,7 +174,7 @@ class ApiClient {
     String? comment,
   }) {
     return _dio.post(
-      'http://localhost:3000/api/reviews',
+      '/reviews',
       data: {
         'menuItemId': menuItemId,
         'restaurantId': restaurantId,
@@ -178,7 +186,7 @@ class ApiClient {
 
   Future<Response> updateReview(String id, {int? rating, String? comment}) {
     return _dio.put(
-      'http://localhost:3000/api/reviews/$id',
+      '/reviews/$id',
       data: {
         if (rating != null) 'rating': rating,
         if (comment != null) 'comment': comment,
@@ -187,29 +195,29 @@ class ApiClient {
   }
 
   Future<Response> deleteReview(String id) {
-    return _dio.delete('http://localhost:3000/api/reviews/$id');
+    return _dio.delete('/reviews/$id');
   }
 
   // Saved restaurants
   Future<Response> getSavedRestaurants() {
-    return _dio.get('http://localhost:3000/api/saved');
+    return _dio.get('/saved');
   }
 
   Future<Response> saveRestaurant(String restaurantId) {
     return _dio.post(
-      'http://localhost:3000/api/saved/$restaurantId',
+      '/saved/$restaurantId',
       data: {},
     );
   }
 
   Future<Response> unsaveRestaurant(String restaurantId) {
-    return _dio.delete('http://localhost:3000/api/saved/$restaurantId');
+    return _dio.delete('/saved/$restaurantId');
   }
 
   // Promotions
   Future<Response> getPromotions(String restaurantId) {
     return _dio.get(
-      'http://localhost:3000/api/promotions/restaurant/$restaurantId',
+      '/promotions/restaurant/$restaurantId',
     );
   }
 }
