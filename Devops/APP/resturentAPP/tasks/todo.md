@@ -63,22 +63,22 @@
 ## Phase 2: Flutter Mobile App
 
 ### Project Setup
-- [ ] Initialize Flutter project
-- [ ] Add core dependencies (dio, flutter_mapbox_gl, riverpod, go_router, image_picker, geolocator, google_sign_in, sign_in_with_apple, cached_network_image, flutter_rating_bar)
-- [ ] Set up project folder structure (core, features)
-- [ ] Configure routing with GoRouter
+- [x] Initialize Flutter project
+- [x] Add core dependencies (dio, riverpod, go_router, image_picker, geolocator, google_sign_in, sign_in_with_apple, cached_network_image, flutter_rating_bar)
+- [x] Set up project folder structure (core, features)
+- [x] Configure routing with GoRouter
 
 ### Authentication Features
-- [ ] Create splash screen
-- [ ] Create login screen with email/password
-- [ ] Create registration screen
+- [x] Create splash screen (integrated with GoRouter redirect)
+- [x] Create login screen with email/password
+- [x] Create registration screen
 - [ ] Implement Google Sign-In button
 - [ ] Implement Apple Sign-In button
-- [ ] Implement JWT token storage (secure storage)
-- [ ] Create API client with JWT interceptor
+- [x] Implement JWT token storage (secure storage)
+- [x] Create API client with JWT interceptor
 
 ### Customer Features
-- [ ] Create home screen with nearby restaurants list
+- [x] Create home screen with nearby restaurants list (trending + all restaurants cards)
 - [ ] Create Mapbox map screen with restaurant pins and current location
 - [ ] Create search screen with filters (name, cuisine, rating, distance)
 - [ ] Create restaurant detail screen (info, menu, promotions, reviews)
@@ -96,12 +96,12 @@
 - [ ] Create analytics screen (most viewed dishes, top-rated items, customer engagement)
 
 ### State Management (Riverpod)
-- [ ] Implement authProvider (user session, token storage)
-- [ ] Implement restaurantProvider (list, detail, search)
-- [ ] Implement menuProvider (menu items per restaurant)
-- [ ] Implement reviewProvider (reviews per dish)
+- [x] Implement authProvider (user session, token storage, copyWith pattern)
+- [x] Implement restaurantProvider (list, detail, trending, search filters)
+- [x] Implement menuProvider (menu items per restaurant)
+- [x] Implement reviewProvider (reviews per dish, create review)
 - [ ] Implement locationProvider (current GPS position)
-- [ ] Implement savedProvider (saved restaurants)
+- [x] Implement savedProvider (save, unsave, check if saved)
 
 ## Phase 3: Infrastructure & Testing
 
@@ -140,13 +140,17 @@
 - ✓ All 30 API endpoints tested and working
 - ✓ TypeScript compilation: Zero errors
 
-**Frontend (20% Complete)**
+**Frontend (40% Complete) ⏳**
 - ✓ Initialized Flutter project with Material 3 design
 - ✓ Configured all dependencies (Dio, Riverpod, go_router, etc.)
-- ✓ Created API client with JWT interceptor
-- ✓ Implemented Riverpod auth provider
-- ✓ Created core models (User, Restaurant, MenuItem)
-- ✓ Built login screen UI template
+- ✓ Created API client with JWT interceptor + 13 restaurant/menu/review/saved methods
+- ✓ Fixed and implemented Riverpod auth provider with copyWith pattern
+- ✓ Created all core models (User, Restaurant, MenuItem, Review, Promotion, SavedRestaurant)
+- ✓ Built login screen with actual auth calls
+- ✓ Created registration screen with form validation
+- ✓ Set up GoRouter with auth redirect middleware
+- ✓ Built HomeScreen with restaurant list, trending, ratings, pull-to-refresh
+- ✓ Implemented all 5 Riverpod providers (auth, restaurant, menu, review, saved)
 - ✓ Set up app theme system (light/dark)
 
 **Infrastructure & Testing**
