@@ -219,6 +219,18 @@ class ApiClient {
     return response.json();
   }
 
+  async getVersionDownloadUrl(versionId: string): Promise<{ url: string }> {
+    return this.request('GET', `/scores/versions/${versionId}/url`);
+  }
+
+  async pinScoreVersion(versionId: string): Promise<any> {
+    return this.request('PATCH', `/scores/versions/${versionId}/pin`);
+  }
+
+  async deleteScoreVersion(versionId: string): Promise<void> {
+    await this.request('DELETE', `/scores/versions/${versionId}`);
+  }
+
   // Concert endpoints
   async getConcerts(): Promise<any[]> {
     return this.request('GET', '/concerts');

@@ -127,10 +127,14 @@
 - [x] Build verification successful
 - [x] Full TypeScript type safety
 
-## Phase 11: Score Viewer Page
-- [ ] `VersionSelector.tsx` (dropdown, pin indicator, upload new version)
-- [ ] `ScoreViewer.tsx` (PDF: `<iframe>` with presigned URL; IMAGE: `<img>`; MusicXML: download link)
-- [ ] `/library/[scoreId]/page.tsx` (viewer + version selector + metadata sidebar)
+## Phase 11: Score Viewer Page ✅
+- [x] `ScoreViewer.tsx` (PDF: `<iframe>` with presigned URL; IMAGE: `<img>`; MusicXML: download link)
+- [x] `VersionList.tsx` (version history with pin/delete for admins)
+- [x] `AddVersionModal.tsx` (upload new file version to existing score)
+- [x] `/library/[scoreId]/page.tsx` (viewer + version selector + metadata sidebar)
+- [x] Three API methods added: getVersionDownloadUrl, pinScoreVersion, deleteScoreVersion
+- [x] Build verification successful
+- [x] Dynamic routing with useParams
 
 ## Phase 12: Concert Pages
 - [ ] `ConcertCard.tsx`
