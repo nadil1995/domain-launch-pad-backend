@@ -290,6 +290,22 @@ class ApiClient {
   ): Promise<any> {
     return this.request('PATCH', `/concerts/${concertId}/pieces/reorder`, { pieces });
   }
+
+  // Settings endpoints
+  async updateProfile(name?: string, password?: string): Promise<any> {
+    return this.request('PATCH', '/users/me', {
+      ...(name && { name }),
+      ...(password && { password }),
+    });
+  }
+
+  async getMyGroup(): Promise<{ group: any }> {
+    return this.request('GET', '/users/me/group');
+  }
+
+  async updateGroupMembers(groupId: string, removeUserIds: string[]): Promise<any> {
+    return this.request('PATCH', `/users/${groupId}/members`, { removeUserIds });
+  }
 }
 
 export const api = new ApiClient();

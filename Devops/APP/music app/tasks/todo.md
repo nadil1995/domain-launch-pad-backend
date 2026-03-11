@@ -146,9 +146,10 @@
 - [x] `/concerts/[id]/page.tsx` (detail + setlist editor)
 - [x] Build verification successful (TypeScript + Next.js)
 
-## Phase 13: Settings Page
-- [ ] Profile form (name, password change)
-- [ ] Group members table (ADMIN only)
+## Phase 13: Settings Page ✅
+- [x] `api.ts`: Add updateProfile, getMyGroup, updateGroupMembers methods
+- [x] `/settings/page.tsx` (profile + group members)
+- [x] Build verification successful (TypeScript + Next.js)
 
 ## Phase 14: Docker End-to-End Test
 - [ ] Finalize both Dockerfiles
