@@ -23,6 +23,21 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      // File type validation
+      const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'text/xml', 'application/xml'];
+      const ALLOWED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.xml', '.musicxml'];
+
+      const fileName = selectedFile.name.toLowerCase();
+      const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+      const isValidType = ALLOWED_TYPES.includes(selectedFile.type) || fileName.endsWith('.musicxml');
+      const isValidExtension = ALLOWED_EXTENSIONS.includes(fileExtension);
+
+      if (!isValidType && !isValidExtension) {
+        setError('Invalid file type. Supported: PDF, MusicXML, PNG, JPG');
+        setFile(null);
+        return;
+      }
+
       setFile(selectedFile);
       setError(null);
     }

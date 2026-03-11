@@ -10,7 +10,7 @@ import AddPieceModal from '@/components/concerts/AddPieceModal';
 import type { Concert } from '@/lib/types';
 
 export default function ConcertDetailPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const params = useParams();
   const router = useRouter();
   const concertId = params.id as string;
@@ -59,7 +59,7 @@ export default function ConcertDetailPage() {
               <span className="text-sm text-gray-600">{user.name}</span>
               <button
                 onClick={() => {
-                  api.setToken(null);
+                  logout();
                   router.push('/login');
                 }}
                 className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
@@ -87,7 +87,7 @@ export default function ConcertDetailPage() {
               <span className="text-sm text-gray-600">{user.name}</span>
               <button
                 onClick={() => {
-                  api.setToken(null);
+                  logout();
                   router.push('/login');
                 }}
                 className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"

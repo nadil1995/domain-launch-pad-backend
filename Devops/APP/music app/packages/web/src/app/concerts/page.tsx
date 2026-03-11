@@ -10,7 +10,7 @@ import CreateConcertModal from '@/components/concerts/CreateConcertModal';
 import type { Concert } from '@/lib/types';
 
 export default function ConcertsPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const [concerts, setConcerts] = useState<Concert[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +59,7 @@ export default function ConcertsPage() {
             <span className="text-sm text-gray-600">{user.name}</span>
             <button
               onClick={() => {
-                api.setToken(null);
+                logout();
                 router.push('/login');
               }}
               className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
