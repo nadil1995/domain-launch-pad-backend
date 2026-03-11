@@ -283,6 +283,13 @@ class ApiClient {
   async removePieceFromConcert(concertId: string, pieceId: string): Promise<void> {
     await this.request('DELETE', `/concerts/${concertId}/pieces/${pieceId}`);
   }
+
+  async reorderPieces(
+    concertId: string,
+    pieces: Array<{ pieceId: string; order: number }>
+  ): Promise<any> {
+    return this.request('PATCH', `/concerts/${concertId}/pieces/reorder`, { pieces });
+  }
 }
 
 export const api = new ApiClient();

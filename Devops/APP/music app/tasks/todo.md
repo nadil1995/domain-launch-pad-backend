@@ -136,11 +136,15 @@
 - [x] Build verification successful
 - [x] Dynamic routing with useParams
 
-## Phase 12: Concert Pages
-- [ ] `ConcertCard.tsx`
-- [ ] `/concerts/page.tsx` (sorted list + New Concert button)
-- [ ] `SetlistEditor.tsx` (add/remove/reorder pieces, search score picker)
-- [ ] `/concerts/[id]/page.tsx` (header + SetlistEditor)
+## Phase 12: Concert Pages ✅
+- [x] `api.ts`: Add `reorderPieces` method
+- [x] `ConcertCard.tsx` (title, date, location, piece count)
+- [x] `CreateConcertModal.tsx` (create new concert form)
+- [x] `AddPieceModal.tsx` (two-step score/version picker)
+- [x] `SetlistEditor.tsx` (reorder/remove pieces for admins)
+- [x] `/concerts/page.tsx` (list + New Concert button)
+- [x] `/concerts/[id]/page.tsx` (detail + setlist editor)
+- [x] Build verification successful (TypeScript + Next.js)
 
 ## Phase 13: Settings Page
 - [ ] Profile form (name, password change)
