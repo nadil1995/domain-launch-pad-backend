@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
+import AppLayout from '@/components/ui/AppLayout';
 import FolderTree from '@/components/library/FolderTree';
 import ScoreCard from '@/components/library/ScoreCard';
 import SearchBar from '@/components/library/SearchBar';
@@ -12,7 +13,7 @@ import type { Folder, Score } from '@/lib/types';
 
 export default function LibraryPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   // Data
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -99,9 +100,9 @@ export default function LibraryPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-brand-bg">
         <div className="animate-spin">
-          <div className="w-12 h-12 rounded-full border-4 border-blue-600 border-t-transparent"></div>
+          <div className="w-12 h-12 rounded-full border-4 border-indigo-500 border-t-transparent"></div>
         </div>
       </div>
     );
@@ -112,120 +113,91 @@ export default function LibraryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">ScoreVault</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-700">{user.name || user.email}</span>
-              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                {user.role}
-              </span>
-              <button
-                onClick={logout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
+    <AppLayout
+      title="Score Library"
+      subtitle="Browse and manage your music scores"
+      action={
+        <button
+          onClick={() => setShowUpload(true)}
+          className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all"
+        >
+          + Upload Score
+        </button>
+      }
+    >
+      {error && (
+        <div className="mb-6 bg-red-900/20 border border-red-800 text-red-300 rounded-lg p-4">
+          <p>{error}</p>
         </div>
-      </nav>
+      )}
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-8 px-4">
-        {/* Title and Actions */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">Library</h2>
-            <p className="text-gray-600 mt-1">Browse and manage your music scores</p>
-          </div>
-          <button
-            onClick={() => setShowUpload(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium"
-          >
-            Upload Score
-          </button>
-        </div>
-
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">{error}</p>
-          </div>
-        )}
-
-        {/* Layout: Sidebar + Main */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <div>
-            {dataLoading ? (
-              <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
-                  <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
-                </div>
+      {/* Layout: Sidebar + Main */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Sidebar */}
+        <div>
+          {dataLoading ? (
+            <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
+              <div className="space-y-2">
+                <div className="h-4 bg-brand-card rounded w-3/4 animate-pulse"></div>
+                <div className="h-4 bg-brand-card rounded w-1/2 animate-pulse"></div>
+                <div className="h-4 bg-brand-card rounded w-2/3 animate-pulse"></div>
               </div>
-            ) : (
-              <FolderTree
-                folders={folders}
-                selectedId={selectedFolderId}
-                onSelect={setSelectedFolderId}
+            </div>
+          ) : (
+            <FolderTree
+              folders={folders}
+              selectedId={selectedFolderId}
+              onSelect={setSelectedFolderId}
+            />
+          )}
+        </div>
+
+        {/* Main Content */}
+        <div className="lg:col-span-3">
+          {/* Search Bar */}
+          {!dataLoading && (
+            <div className="mb-6">
+              <SearchBar
+                availableTags={availableTags}
+                onSearch={(query, tags) => {
+                  setSearchQuery(query);
+                  setActiveTags(tags);
+                }}
               />
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            {/* Search Bar */}
-            {!dataLoading && (
-              <div className="mb-6">
-                <SearchBar
-                  availableTags={availableTags}
-                  onSearch={(query, tags) => {
-                    setSearchQuery(query);
-                    setActiveTags(tags);
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Scores Grid */}
-            {dataLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg shadow p-4 border border-gray-200">
-                    <div className="h-6 bg-gray-200 rounded w-3/4 animate-pulse mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse mb-4"></div>
-                    <div className="space-y-2">
-                      <div className="h-3 bg-gray-200 rounded w-2/3 animate-pulse"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
-                    </div>
+          {/* Scores Grid */}
+          {dataLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-brand-surface border border-brand-border rounded-xl p-4">
+                  <div className="h-6 bg-brand-card rounded w-3/4 animate-pulse mb-2"></div>
+                  <div className="h-4 bg-brand-card rounded w-1/2 animate-pulse mb-4"></div>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-brand-card rounded w-2/3 animate-pulse"></div>
+                    <div className="h-3 bg-brand-card rounded w-1/2 animate-pulse"></div>
                   </div>
-                ))}
-              </div>
-            ) : filteredScores.length === 0 ? (
-              <div className="bg-white rounded-lg shadow p-12 border border-gray-200 text-center">
-                <p className="text-gray-600 text-lg">
-                  {allScores.length === 0
-                    ? 'No scores yet. Upload your first score to get started!'
-                    : 'No scores match your filters.'}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredScores.map((score) => (
-                  <ScoreCard key={score.id} score={score} />
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredScores.length === 0 ? (
+            <div className="bg-brand-surface border border-brand-border rounded-xl p-12 text-center">
+              <p className="text-slate-400 text-lg">
+                {allScores.length === 0
+                  ? '📚 No scores yet. Upload your first score to get started!'
+                  : '🔍 No scores match your filters.'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filteredScores.map((score) => (
+                <ScoreCard key={score.id} score={score} />
+              ))}
+            </div>
+          )}
         </div>
-      </main>
+      </div>
 
       {/* Upload Modal */}
       {showUpload && (
@@ -237,6 +209,6 @@ export default function LibraryPage() {
           }}
         />
       )}
-    </div>
+    </AppLayout>
   );
 }

@@ -91,17 +91,17 @@ export default function AddPieceModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
-        <div className="border-b border-gray-200 p-6 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {step === 'select-score' ? 'Add Piece to Concert' : `Add Piece: ${selectedScore?.title}`}
+      <div className="bg-brand-surface border border-brand-border rounded-xl shadow-xl max-w-md w-full">
+        <div className="border-b border-brand-border p-6 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-white">
+            {step === 'select-score' ? '🎵 Add Piece' : `🎵 ${selectedScore?.title}`}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+            className="text-slate-400 hover:text-slate-300 text-2xl leading-none transition-colors"
           >
             ×
           </button>
@@ -109,8 +109,8 @@ export default function AddPieceModal({
 
         <div className="p-6 space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className="bg-red-900/20 border border-red-800 text-red-300 rounded-lg p-4">
+              <p className="text-sm">{error}</p>
             </div>
           )}
 
@@ -121,36 +121,36 @@ export default function AddPieceModal({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by title or composer..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="🔍 Search by title or composer..."
+                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                   disabled={loading}
                 />
               </div>
 
-              <div className="max-h-[400px] overflow-y-auto space-y-2 border border-gray-200 rounded-lg p-2">
+              <div className="max-h-[400px] overflow-y-auto space-y-2 border border-brand-border rounded-lg p-2">
                 {filteredScores.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">No scores found</p>
+                  <p className="text-slate-500 text-center py-4">No scores found</p>
                 ) : (
                   filteredScores.map((score) => (
                     <button
                       key={score.id}
                       onClick={() => handleSelectScore(score)}
                       disabled={loading}
-                      className="w-full text-left px-3 py-2 rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition disabled:opacity-50"
+                      className="w-full text-left px-3 py-2 rounded border border-brand-border hover:border-indigo-500/50 hover:bg-brand-card text-white transition disabled:opacity-50"
                     >
-                      <p className="font-medium text-gray-900">{score.title}</p>
+                      <p className="font-medium">{score.title}</p>
                       {score.composer && (
-                        <p className="text-sm text-gray-600">by {score.composer}</p>
+                        <p className="text-sm text-slate-400">by {score.composer}</p>
                       )}
                     </button>
                   ))
                 )}
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   onClick={onClose}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-brand-border text-slate-300 hover:text-white hover:border-indigo-500/50 hover:bg-brand-card rounded-lg transition-all"
                 >
                   Cancel
                 </button>
@@ -159,39 +159,39 @@ export default function AddPieceModal({
           ) : (
             <>
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Select Version</p>
-                <div className="space-y-2 max-h-[300px] overflow-y-auto border border-gray-200 rounded-lg p-2">
+                <p className="text-sm font-medium text-slate-300 mb-2">Select Version</p>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto border border-brand-border rounded-lg p-2">
                   {versions.map((version: ScoreVersion) => (
                     <button
                       key={version.id}
                       onClick={() => setSelectedVersion(version)}
                       className={`w-full text-left px-3 py-2 rounded border transition ${
                         selectedVersion?.id === version.id
-                          ? 'border-blue-600 bg-blue-50'
-                          : 'border-gray-200 hover:bg-gray-50'
+                          ? 'border-indigo-500 bg-indigo-900/20 text-white'
+                          : 'border-brand-border hover:bg-brand-card text-slate-300 hover:text-white'
                       }`}
                       disabled={loading}
                     >
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium">
                         v{version.versionNumber}
-                        <span className="ml-2 text-xs font-normal bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                        <span className="ml-2 text-xs font-normal bg-brand-card text-slate-300 px-2 py-1 rounded border border-brand-border">
                           {version.fileType}
                         </span>
                         {version.pinned && (
-                          <span className="ml-2 text-xs text-yellow-600 font-semibold">
+                          <span className="ml-2 text-xs text-yellow-400 font-semibold">
                             📌 Pinned
                           </span>
                         )}
                       </p>
                       {version.changeNotes && (
-                        <p className="text-xs text-gray-600 mt-1">{version.changeNotes}</p>
+                        <p className="text-xs text-slate-500 mt-1">{version.changeNotes}</p>
                       )}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => {
                     setStep('select-score');
@@ -200,14 +200,14 @@ export default function AddPieceModal({
                     setSearchQuery('');
                   }}
                   disabled={loading}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 border border-brand-border text-slate-300 hover:text-white hover:border-indigo-500/50 hover:bg-brand-card rounded-lg transition-all disabled:opacity-50"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleAddPiece}
                   disabled={loading || !selectedVersion}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50"
                 >
                   {loading ? 'Adding...' : 'Add Piece'}
                 </button>

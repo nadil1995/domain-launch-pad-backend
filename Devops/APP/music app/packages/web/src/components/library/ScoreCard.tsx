@@ -17,12 +17,12 @@ export default function ScoreCard({ score }: ScoreCardProps) {
   return (
     <div
       onClick={handleClick}
-      className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer p-4 border border-gray-200 hover:border-blue-300"
+      className="bg-brand-surface border border-brand-border rounded-xl hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all cursor-pointer p-4"
     >
-      <h3 className="text-lg font-semibold text-gray-900 truncate">{score.title}</h3>
+      <h3 className="text-lg font-semibold text-white truncate">{score.title}</h3>
 
       {score.composer && (
-        <p className="text-sm text-gray-600 mt-1 truncate">by {score.composer}</p>
+        <p className="text-sm text-slate-400 mt-1 truncate">by {score.composer}</p>
       )}
 
       <div className="mt-3 flex flex-wrap gap-1">
@@ -30,22 +30,22 @@ export default function ScoreCard({ score }: ScoreCardProps) {
           score.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
+              className="inline-block text-xs bg-indigo-900/40 text-indigo-300 border border-indigo-800 px-2 py-1 rounded"
             >
               {tag}
             </span>
           ))
         ) : (
-          <span className="text-xs text-gray-400">No tags</span>
+          <span className="text-xs text-slate-500">No tags</span>
         )}
         {score.tags.length > 3 && (
-          <span className="text-xs text-gray-400 px-2 py-1">+{score.tags.length - 3}</span>
+          <span className="text-xs text-slate-500 px-2 py-1">+{score.tags.length - 3}</span>
         )}
       </div>
 
-      <div className="mt-3 text-xs text-gray-500 space-y-1">
-        <p>Versions: {score.versions?.length || 0}</p>
-        <p>Added {new Date(score.createdAt).toLocaleDateString()}</p>
+      <div className="mt-3 text-xs text-slate-400 space-y-1">
+        <p>📋 {score.versions?.length || 0} version{(score.versions?.length || 0) !== 1 ? 's' : ''}</p>
+        <p>📅 {new Date(score.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
       </div>
     </div>
   );

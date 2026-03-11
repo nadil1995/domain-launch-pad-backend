@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
+import AppLayout from '@/components/ui/AppLayout';
 import SetlistEditor from '@/components/concerts/SetlistEditor';
 import AddPieceModal from '@/components/concerts/AddPieceModal';
 import type { Concert } from '@/lib/types';
@@ -51,63 +52,43 @@ export default function ConcertDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">ScoreVault</h1>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{user.name}</span>
-              <button
-                onClick={() => {
-                  logout();
-                  router.push('/login');
-                }}
-                className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
-              >
-                Logout
-              </button>
-            </div>
+      <AppLayout
+        title="Loading..."
+        action={
+          <Link href="/concerts" className="text-indigo-400 hover:text-indigo-300 font-medium">
+            ← Back to Concerts
+          </Link>
+        }
+      >
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin">
+            <div className="w-12 h-12 rounded-full border-4 border-indigo-500 border-t-transparent"></div>
           </div>
-        </nav>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-spin w-8 h-8 rounded-full border-4 border-blue-600 border-t-transparent mx-auto" />
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   if (!concert) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">ScoreVault</h1>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{user.name}</span>
-              <button
-                onClick={() => {
-                  logout();
-                  router.push('/login');
-                }}
-                className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </nav>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <AppLayout
+        title="Concert Not Found"
+        action={
+          <Link href="/concerts" className="text-indigo-400 hover:text-indigo-300 font-medium">
+            ← Back to Concerts
+          </Link>
+        }
+      >
+        <div className="bg-red-900/20 border border-red-800 rounded-lg p-8 text-center">
+          <p className="text-red-300 mb-4">The concert you're looking for doesn't exist</p>
           <Link
             href="/concerts"
-            className="text-blue-600 hover:text-blue-700 font-medium mb-6 inline-block"
+            className="inline-block px-6 py-2 bg-red-900/40 border border-red-800 text-red-300 rounded-lg hover:bg-red-900/60 transition-colors"
           >
             ← Back to Concerts
           </Link>
-          <p className="text-gray-600">Concert not found</p>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
@@ -119,70 +100,42 @@ export default function ConcertDetailPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Nav */}
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">ScoreVault</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user.name}</span>
-            <button
-              onClick={() => {
-                api.setToken(null);
-                router.push('/login');
-              }}
-              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Link
-            href="/concerts"
-            className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block"
-          >
+    <AppLayout
+      title={concert.title}
+      subtitle={formattedDate}
+      action={
+        <div className="flex gap-4">
+          <Link href="/concerts" className="text-indigo-400 hover:text-indigo-300 font-medium">
             ← Back to Concerts
           </Link>
-
-          <h1 className="text-3xl font-bold text-gray-900">{concert.title}</h1>
-          <p className="text-gray-600 mt-2">{formattedDate}</p>
-          {concert.location && (
-            <p className="text-gray-600">{concert.location}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-800">{error}</p>
-          </div>
-        )}
-
-        <div className="flex justify-between items-start mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Setlist</h2>
           {isAdmin && (
             <button
               onClick={() => setShowAddPiece(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all"
             >
-              + Add piece
+              + Add Piece
             </button>
           )}
         </div>
+      }
+    >
+      {error && (
+        <div className="bg-red-900/20 border border-red-800 text-red-300 rounded-lg p-4 mb-6">
+          <p>{error}</p>
+        </div>
+      )}
 
-        <SetlistEditor
-          concert={concert}
-          onReload={loadConcert}
-          isAdmin={isAdmin || false}
-        />
-      </div>
+      {concert.location && (
+        <div className="mb-6 p-4 bg-brand-surface border border-brand-border rounded-lg">
+          <p className="text-slate-300">📍 {concert.location}</p>
+        </div>
+      )}
+
+      <SetlistEditor
+        concert={concert}
+        onReload={loadConcert}
+        isAdmin={isAdmin || false}
+      />
 
       {/* Add piece modal */}
       {showAddPiece && (
@@ -192,6 +145,6 @@ export default function ConcertDetailPage() {
           onSuccess={loadConcert}
         />
       )}
-    </div>
+    </AppLayout>
   );
 }

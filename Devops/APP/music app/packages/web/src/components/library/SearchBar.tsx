@@ -32,14 +32,14 @@ export default function SearchBar({ onSearch, availableTags }: SearchBarProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+    <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Search by title or composer..."
+          placeholder="🔍 Search by title or composer..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
         />
       </div>
 
@@ -48,10 +48,10 @@ export default function SearchBar({ onSearch, availableTags }: SearchBarProps) {
           <button
             key={tag}
             onClick={() => toggleTag(tag)}
-            className={`text-sm px-3 py-1 rounded transition ${
+            className={`text-sm px-3 py-1 rounded-full transition ${
               activeTags.includes(tag)
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                : 'bg-brand-card text-slate-300 border border-brand-border hover:border-indigo-500/50 hover:text-indigo-300'
             }`}
           >
             {tag}
@@ -59,16 +59,16 @@ export default function SearchBar({ onSearch, availableTags }: SearchBarProps) {
         ))}
 
         {availableTags.length === 0 && (
-          <p className="text-sm text-gray-400">No tags available</p>
+          <p className="text-sm text-slate-500">No tags available</p>
         )}
       </div>
 
       {(query || activeTags.length > 0) && (
         <button
           onClick={clearAll}
-          className="mt-3 text-sm text-gray-600 hover:text-gray-900 underline"
+          className="mt-3 text-sm text-slate-400 hover:text-slate-300 transition-colors"
         >
-          Clear all filters
+          ✕ Clear all filters
         </button>
       )}
     </div>

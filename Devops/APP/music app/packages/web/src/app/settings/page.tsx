@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
+import AppLayout from '@/components/ui/AppLayout';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -106,90 +107,63 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Nav */}
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">ScoreVault</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user.name || user.email}</span>
-            <button
-              onClick={() => {
-                api.setToken(null);
-                router.push('/login');
-              }}
-              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h2 className="text-3xl font-bold text-gray-900">Settings</h2>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <AppLayout title="Settings" subtitle="Manage your profile and group settings">
+      <div className="space-y-8 max-w-3xl">
         {/* Profile Card */}
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-6 max-w-2xl">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Profile</h3>
+        <div className="bg-brand-surface border border-brand-border rounded-xl p-6">
+          <h3 className="text-2xl font-bold text-white mb-6">👤 Profile</h3>
 
           {profileError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <p className="text-red-800 text-sm">{profileError}</p>
+            <div className="bg-red-900/20 border border-red-800 text-red-300 rounded-lg p-4 mb-4">
+              <p className="text-sm">{profileError}</p>
             </div>
           )}
 
           {profileSuccess && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <p className="text-green-800 text-sm">Profile updated successfully</p>
+            <div className="bg-green-900/20 border border-green-800 text-green-300 rounded-lg p-4 mb-4">
+              <p className="text-sm">✓ Profile updated successfully</p>
             </div>
           )}
 
           <form onSubmit={handleProfileSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Email
               </label>
-              <p className="text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded border border-gray-200">
+              <p className="text-sm text-slate-300 bg-brand-card px-4 py-2 rounded border border-brand-border">
                 {user.email}
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Name
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                 disabled={profileLoading}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Role
               </label>
-              <p className="text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded border border-gray-200">
-                <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">
+              <p className="text-sm text-slate-300 bg-brand-card px-4 py-2 rounded border border-brand-border">
+                <span className="inline-block bg-indigo-900/50 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-800">
                   {user.role}
                 </span>
               </p>
             </div>
 
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="font-semibold text-gray-900 mb-4">Change Password</h4>
+            <div className="border-t border-brand-border pt-4">
+              <h4 className="font-semibold text-white mb-4">🔐 Change Password</h4>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   New Password (optional)
                 </label>
                 <input
@@ -197,14 +171,14 @@ export default function SettingsPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Leave blank to keep current password"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                   disabled={profileLoading}
                 />
-                <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                <p className="text-xs text-slate-500 mt-1">Minimum 6 characters</p>
               </div>
 
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Confirm Password
                 </label>
                 <input
@@ -212,7 +186,7 @@ export default function SettingsPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Leave blank to keep current password"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                   disabled={profileLoading}
                 />
               </div>
@@ -222,7 +196,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={profileLoading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50"
               >
                 {profileLoading ? 'Saving...' : 'Save Changes'}
               </button>
@@ -232,48 +206,48 @@ export default function SettingsPage() {
 
         {/* Group Card */}
         {groupLoading ? (
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-6 max-w-2xl">
+          <div className="bg-brand-surface border border-brand-border rounded-xl p-6">
             <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded mb-4 w-1/4" />
+              <div className="h-8 bg-brand-card rounded mb-4 w-1/4" />
               <div className="space-y-3">
-                <div className="h-4 bg-gray-200 rounded" />
-                <div className="h-4 bg-gray-200 rounded" />
+                <div className="h-4 bg-brand-card rounded" />
+                <div className="h-4 bg-brand-card rounded" />
               </div>
             </div>
           </div>
         ) : group ? (
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-6 max-w-4xl">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Group: {group.name}</h3>
+          <div className="bg-brand-surface border border-brand-border rounded-xl p-6">
+            <h3 className="text-2xl font-bold text-white mb-4">👥 Group: {group.name}</h3>
 
-            <p className="text-sm text-gray-600 mb-4">
-              Admin: <span className="font-medium">{group.admin.name || group.admin.email}</span>
+            <p className="text-sm text-slate-400 mb-4">
+              Admin: <span className="text-white font-medium">{group.admin.name || group.admin.email}</span>
             </p>
 
             {groupError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                <p className="text-red-800 text-sm">{groupError}</p>
+              <div className="bg-red-900/20 border border-red-800 text-red-300 rounded-lg p-4 mb-4">
+                <p className="text-sm">{groupError}</p>
               </div>
             )}
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Name</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Email</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Role</th>
+                  <tr className="border-b border-brand-border">
+                    <th className="text-left py-3 px-4 font-semibold text-white">Name</th>
+                    <th className="text-left py-3 px-4 font-semibold text-white">Email</th>
+                    <th className="text-left py-3 px-4 font-semibold text-white">Role</th>
                     {isAdmin && (
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Actions</th>
+                      <th className="text-left py-3 px-4 font-semibold text-white">Actions</th>
                     )}
                   </tr>
                 </thead>
                 <tbody>
                   {group.members.map((member: any) => (
-                    <tr key={member.id} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="py-3 px-4">{member.name || '—'}</td>
-                      <td className="py-3 px-4 text-gray-600">{member.email}</td>
+                    <tr key={member.id} className="border-b border-brand-border hover:bg-brand-card transition-colors">
+                      <td className="py-3 px-4 text-white">{member.name || '—'}</td>
+                      <td className="py-3 px-4 text-slate-400">{member.email}</td>
                       <td className="py-3 px-4">
-                        <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">
+                        <span className="inline-block bg-indigo-900/50 text-indigo-300 text-xs font-semibold px-2 py-1 rounded border border-indigo-800">
                           {member.role}
                         </span>
                       </td>
@@ -283,10 +257,10 @@ export default function SettingsPage() {
                             <button
                               onClick={() => handleRemoveMember(member.id, member.name || member.email)}
                               disabled={memberActionLoading}
-                              className="text-red-600 hover:text-red-700 disabled:opacity-50"
+                              className="text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors"
                               title="Remove member"
                             >
-                              🗑
+                              🗑️
                             </button>
                           )}
                         </td>
@@ -298,11 +272,11 @@ export default function SettingsPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-6 max-w-2xl">
-            <p className="text-gray-600">You are not in a group yet</p>
+          <div className="bg-brand-surface border border-brand-border rounded-xl p-6">
+            <p className="text-slate-400">👥 You are not in a group yet</p>
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   );
 }

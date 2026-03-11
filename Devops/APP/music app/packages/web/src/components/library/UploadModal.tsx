@@ -101,15 +101,15 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-900">Upload Score</h2>
+      <div className="bg-brand-surface border border-brand-border rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-brand-surface border-b border-brand-border p-6 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-white">📤 Upload Score</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+            className="text-slate-400 hover:text-slate-300 text-2xl leading-none transition-colors"
           >
             ×
           </button>
@@ -117,15 +117,15 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className="bg-red-900/20 border border-red-800 text-red-300 rounded-lg p-4">
+              <p className="text-sm">{error}</p>
             </div>
           )}
 
           {step === 'form' ? (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Title *
                 </label>
                 <input
@@ -133,13 +133,13 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g., Moonlight Sonata"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                   disabled={loading}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Composer
                 </label>
                 <input
@@ -147,24 +147,24 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
                   value={composer}
                   onChange={(e) => setComposer(e.target.value)}
                   placeholder="e.g., Ludwig van Beethoven"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                   disabled={loading}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Folder
                 </label>
                 <select
                   value={folderId}
                   onChange={(e) => setFolderId(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                   disabled={loading}
                 >
-                  <option value="">Root (no folder)</option>
+                  <option value="" className="bg-brand-card text-white">Root (no folder)</option>
                   {folders.map((folder) => (
-                    <option key={folder.id} value={folder.id}>
+                    <option key={folder.id} value={folder.id} className="bg-brand-card text-white">
                       {folder.name}
                     </option>
                   ))}
@@ -172,7 +172,7 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Tags (comma-separated)
                 </label>
                 <input
@@ -180,41 +180,41 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
                   placeholder="e.g., classical, piano, romantic"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                   disabled={loading}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   File *
                 </label>
                 <input
                   type="file"
                   onChange={handleFileChange}
                   accept=".pdf,.xml,.musicxml,.png,.jpg,.jpeg"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition file:text-slate-300 file:bg-brand-border file:border-0 file:px-2 file:py-1 file:rounded"
                   disabled={loading}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Supported: PDF, MusicXML, PNG, JPG
                 </p>
-                {file && <p className="text-sm text-green-600 mt-2">✓ {file.name}</p>}
+                {file && <p className="text-sm text-green-400 mt-2">✓ {file.name}</p>}
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={onClose}
                   disabled={loading}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 border border-brand-border text-slate-300 hover:text-white hover:border-indigo-500/50 hover:bg-brand-card rounded-lg transition-all disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading || !title.trim() || !file}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50"
                 >
                   {loading ? 'Uploading...' : 'Upload'}
                 </button>
@@ -224,10 +224,10 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
             <div className="py-8 text-center">
               <div className="inline-block">
                 <div className="animate-spin">
-                  <div className="w-12 h-12 rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                  <div className="w-12 h-12 rounded-full border-4 border-indigo-500 border-t-transparent"></div>
                 </div>
               </div>
-              <p className="mt-4 text-gray-600">Uploading your score...</p>
+              <p className="mt-4 text-slate-400">Uploading your score...</p>
             </div>
           )}
         </form>

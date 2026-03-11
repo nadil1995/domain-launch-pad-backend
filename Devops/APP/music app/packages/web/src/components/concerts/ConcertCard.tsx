@@ -18,18 +18,18 @@ export default function ConcertCard({ concert }: ConcertCardProps) {
 
   return (
     <Link href={`/concerts/${concert.id}`}>
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-6 hover:shadow-lg transition cursor-pointer">
-        <h3 className="text-lg font-bold text-gray-900 mb-2">{concert.title}</h3>
+      <div className="bg-brand-surface border border-brand-border rounded-xl hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all cursor-pointer p-6">
+        <h3 className="text-lg font-bold text-white mb-2">{concert.title}</h3>
 
-        <p className="text-sm text-gray-600 mb-2">{formattedDate}</p>
+        <p className="text-sm text-slate-400 mb-2">📅 {formattedDate}</p>
 
         {concert.location && (
-          <p className="text-sm text-gray-600 mb-3">{concert.location}</p>
+          <p className="text-sm text-slate-400 mb-3">📍 {concert.location}</p>
         )}
 
-        <div className="flex items-center gap-2">
-          <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">
-            {pieceCount} {pieceCount === 1 ? 'piece' : 'pieces'}
+        <div className="flex items-center gap-2 pt-3 border-t border-brand-border">
+          <span className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+            🎵 {pieceCount} {pieceCount === 1 ? 'piece' : 'pieces'}
           </span>
         </div>
       </div>

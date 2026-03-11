@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
+import AppLayout from '@/components/ui/AppLayout';
 import ConcertCard from '@/components/concerts/ConcertCard';
 import CreateConcertModal from '@/components/concerts/CreateConcertModal';
 import type { Concert } from '@/lib/types';
@@ -50,78 +51,54 @@ export default function ConcertsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Nav */}
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">ScoreVault</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user.name}</span>
-            <button
-              onClick={() => {
-                logout();
-                router.push('/login');
-              }}
-              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
-            >
-              Logout
-            </button>
-          </div>
+    <AppLayout
+      title="Concerts"
+      subtitle="Manage your performances and setlists"
+      action={
+        isAdmin && (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all"
+          >
+            + New Concert
+          </button>
+        )
+      }
+    >
+      {error && (
+        <div className="mb-6 bg-red-900/20 border border-red-800 text-red-300 rounded-lg p-4">
+          <p>{error}</p>
         </div>
-      </nav>
+      )}
 
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-gray-900">Concerts</h2>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-brand-surface border border-brand-border rounded-xl h-48 animate-pulse"
+            />
+          ))}
+        </div>
+      ) : concerts.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-slate-400 mb-4">🎭 No concerts yet</p>
           {isAdmin && (
             <button
               onClick={() => setShowCreate(true)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="text-indigo-400 hover:text-indigo-300 font-medium"
             >
-              + New Concert
+              Create the first concert
             </button>
           )}
         </div>
-      </div>
-
-      {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-800">{error}</p>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="bg-gray-200 rounded-lg h-48 animate-pulse"
-              />
-            ))}
-          </div>
-        ) : concerts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600 mb-4">No concerts yet</p>
-            {isAdmin && (
-              <button
-                onClick={() => setShowCreate(true)}
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Create the first concert
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {concerts.map((concert) => (
-              <ConcertCard key={concert.id} concert={concert} />
-            ))}
-          </div>
-        )}
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {concerts.map((concert) => (
+            <ConcertCard key={concert.id} concert={concert} />
+          ))}
+        </div>
+      )}
 
       {/* Create concert modal */}
       {showCreate && (
@@ -130,6 +107,6 @@ export default function ConcertsPage() {
           onSuccess={loadConcerts}
         />
       )}
-    </div>
+    </AppLayout>
   );
 }
