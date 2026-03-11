@@ -106,14 +106,16 @@
 - [x] Token management (localStorage)
 - [x] Auth redirect on home page
 
-## Phase 9: Dashboard Page ⏳
+## Phase 9: Dashboard Page ✅
 - [x] Basic dashboard layout with nav and header
 - [x] User info display and logout button
-- [ ] Upcoming concerts card (next 3 by date)
-- [ ] Recently uploaded scores card (last 5)
-- [ ] Quick upload button (→ /library)
-- [ ] Role-based: "Create Concert" only for ADMIN/CONDUCTOR
-- [ ] Loading skeletons for placeholder content
+- [x] Upcoming concerts card (next 3 by date)
+- [x] Recently uploaded scores card (last 5)
+- [x] Quick upload button (→ /library)
+- [x] Role-based: "Create Concert" only for ADMIN/CONDUCTOR
+- [x] Loading skeletons for placeholder content
+- [x] Stats cards (total scores, upcoming concerts, user role)
+- [x] API data integration with loading states
 
 ## Phase 10: Library Page
 - [ ] `FolderTree.tsx` (recursive, click to filter)
