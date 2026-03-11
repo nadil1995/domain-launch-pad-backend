@@ -188,6 +188,37 @@ class ApiClient {
     return this.request('GET', `/scores/${scoreId}/versions`);
   }
 
+  async uploadScoreVersion(
+    scoreId: string,
+    file: File,
+    changeNotes?: string
+  ): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (changeNotes) {
+      formData.append('changeNotes', changeNotes);
+    }
+
+    const response = await fetch(`${this.baseUrl}/api/v1/scores/${scoreId}/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({}));
+      throw new ApiError(
+        response.status,
+        response.statusText,
+        errorBody.error || response.statusText
+      );
+    }
+
+    return response.json();
+  }
+
   // Concert endpoints
   async getConcerts(): Promise<any[]> {
     return this.request('GET', '/concerts');

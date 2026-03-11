@@ -117,12 +117,15 @@
 - [x] Stats cards (total scores, upcoming concerts, user role)
 - [x] API data integration with loading states
 
-## Phase 10: Library Page
-- [ ] `FolderTree.tsx` (recursive, click to filter)
-- [ ] `ScoreCard.tsx` (title, composer, tags, version count)
-- [ ] `SearchBar.tsx` (debounced, tag chips)
-- [ ] `UploadModal.tsx` (file picker + metadata form + folder selector)
-- [ ] `/library/page.tsx` (FolderTree + ScoreGrid + SearchBar + UploadModal)
+## Phase 10: Library Page ✅
+- [x] `FolderTree.tsx` (recursive, click to filter)
+- [x] `ScoreCard.tsx` (title, composer, tags, version count)
+- [x] `SearchBar.tsx` (debounced, tag chips)
+- [x] `UploadModal.tsx` (file picker + metadata form + folder selector)
+- [x] `/library/page.tsx` (FolderTree + ScoreGrid + SearchBar + UploadModal)
+- [x] `uploadScoreVersion` method in API client
+- [x] Build verification successful
+- [x] Full TypeScript type safety
 
 ## Phase 11: Score Viewer Page
 - [ ] `VersionSelector.tsx` (dropdown, pin indicator, upload new version)
