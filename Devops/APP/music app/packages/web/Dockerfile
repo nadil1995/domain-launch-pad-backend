@@ -21,11 +21,13 @@ RUN npm run build
 FROM node:20-slim
 
 WORKDIR /app
+ARG NEXT_PUBLIC_API_URL=http://api:4000
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_API_URL=http://api:4000
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 COPY --from=builder /app/packages/web/node_modules ./node_modules
 COPY --from=builder /app/packages/web/.next ./.next
+COPY --from=builder /app/packages/web/public ./public
 COPY --from=builder /app/packages/web/package.json ./package.json
 COPY --from=builder /app/packages/web/next.config.js ./next.config.js
 

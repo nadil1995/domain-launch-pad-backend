@@ -151,10 +151,12 @@
 - [x] `/settings/page.tsx` (profile + group members)
 - [x] Build verification successful (TypeScript + Next.js)
 
-## Phase 14: Docker End-to-End Test
-- [ ] Finalize both Dockerfiles
-- [ ] `docker compose up --build` — all 5 services start
-- [ ] Smoke test: register → upload score → view score → create concert → add piece to setlist
+## Phase 14: Docker End-to-End Test ⏳
+- [x] API Dockerfile: Add `npx prisma migrate deploy` to startup
+- [x] Web Dockerfile: Add ARG for NEXT_PUBLIC_API_URL, copy public/
+- [x] docker-compose.yml: Add API healthcheck, fix dependencies, update build args
+- [ ] `docker compose up --build` — verify all 5 services start
+- [ ] Smoke test: register → upload score → view score → create concert → add piece
 
 ## Phase 15: Seed Data & Polish
 - [ ] Expanded seed: 4 users, 2 groups, 5 folders, 8 scores with versions, 2 concerts
