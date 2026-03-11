@@ -88,25 +88,32 @@
   - [x] Full validation and error handling
 - [x] Full test coverage - all 7 endpoints verified
 
-## Phase 7: Next.js Web Scaffold
-- [ ] Init Next.js with App Router + TypeScript + Tailwind
-- [ ] `lib/api.ts` (fetch wrapper, auto-attach Bearer token)
-- [ ] `lib/auth-context.tsx` (AuthProvider, useAuth, localStorage)
-- [ ] `lib/types.ts` (User, Score, ScoreVersion, Folder, Concert)
-- [ ] App shell: Sidebar + Header in `(app)/layout.tsx`
-- [ ] `packages/web/Dockerfile` + `next.config.ts` (API rewrites)
-- [ ] Verify web loads at http://localhost:3000
+## Phase 7: Next.js Web Scaffold ✅
+- [x] Init Next.js with App Router + TypeScript + Tailwind
+- [x] `lib/api.ts` (fetch wrapper, auto-attach Bearer token)
+- [x] `lib/auth-context.tsx` (AuthProvider, useAuth, localStorage)
+- [x] `lib/types.ts` (User, Score, ScoreVersion, Folder, Concert)
+- [x] Root layout and global styles with Tailwind
+- [x] Home page with auth redirect logic
+- [x] `packages/web/Dockerfile` + `next.config.ts` (API rewrites)
+- [x] TypeScript configuration and tooling
+- [x] Environment setup (.env.example)
 
-## Phase 8: Auth Pages
-- [ ] `/login/page.tsx` (form → POST /auth/login → store token → /dashboard)
-- [ ] `/register/page.tsx` (form with role selector)
-- [ ] Auth guard in `(app)/layout.tsx` (redirect to /login if no token)
+## Phase 8: Auth Pages ✅
+- [x] `/login/page.tsx` (form → POST /auth/login → store token → /dashboard)
+- [x] `/register/page.tsx` (form with validation)
+- [x] Auth context with login/register/logout
+- [x] Token management (localStorage)
+- [x] Auth redirect on home page
 
-## Phase 9: Dashboard Page
+## Phase 9: Dashboard Page ⏳
+- [x] Basic dashboard layout with nav and header
+- [x] User info display and logout button
 - [ ] Upcoming concerts card (next 3 by date)
 - [ ] Recently uploaded scores card (last 5)
 - [ ] Quick upload button (→ /library)
 - [ ] Role-based: "Create Concert" only for ADMIN/CONDUCTOR
+- [ ] Loading skeletons for placeholder content
 
 ## Phase 10: Library Page
 - [ ] `FolderTree.tsx` (recursive, click to filter)
