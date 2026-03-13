@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api';
+import TagInput from '@/components/ui/TagInput';
 
 interface AddVersionModalProps {
   scoreId: string;
@@ -16,6 +17,7 @@ export default function AddVersionModal({
 }: AddVersionModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [changeNotes, setChangeNotes] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,9 +41,15 @@ export default function AddVersionModal({
     setError(null);
 
     try {
-      await api.uploadScoreVersion(scoreId, file, changeNotes || undefined);
+      await api.uploadScoreVersion(
+        scoreId,
+        file,
+        changeNotes || undefined,
+        tags.length > 0 ? tags : undefined
+      );
       setFile(null);
       setChangeNotes('');
+      setTags([]);
       onSuccess();
       onClose();
     } catch (err) {
@@ -108,6 +116,18 @@ export default function AddVersionModal({
               rows={3}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tags (optional)
+            </label>
+            <TagInput
+              tags={tags}
+              onChange={setTags}
+              disabled={loading}
+              placeholder="Add tags to organize versions..."
             />
           </div>
 

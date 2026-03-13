@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { api } from '@/lib/api';
 import type { ScoreVersion } from '@/lib/types';
 
 interface VersionListProps {
@@ -23,6 +25,8 @@ export default function VersionList({
   isAdmin,
   actionLoading,
 }: VersionListProps) {
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
   // Sort by version number descending (newest first)
   const sorted = [...versions].sort((a, b) => b.versionNumber - a.versionNumber);
 
@@ -33,6 +37,19 @@ export default function VersionList({
     }
     if (confirm('Are you sure you want to delete this version?')) {
       onDelete(versionId);
+    }
+  };
+
+  const handleDownload = async (versionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      setDownloadingId(versionId);
+      const { url } = await api.getVersionDownloadUrl(versionId);
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error('Failed to download version:', err);
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -70,39 +87,61 @@ export default function VersionList({
                 {version.changeNotes && (
                   <p className="text-xs text-gray-600 mt-1">{version.changeNotes}</p>
                 )}
+                {version.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {version.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <p className="text-xs text-gray-400 mt-1">
                   {new Date(version.createdAt).toLocaleDateString()}
                 </p>
               </div>
 
-              {isAdmin && (
-                <div className="flex gap-1 ml-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!version.pinned) {
-                        onPin(version.id);
-                      }
-                    }}
-                    disabled={version.pinned || actionLoading}
-                    title={version.pinned ? 'Already pinned' : 'Pin this version'}
-                    className="p-1 text-yellow-600 hover:bg-yellow-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    📌
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClick(version.id);
-                    }}
-                    disabled={versions.length === 1 || actionLoading}
-                    title={versions.length === 1 ? 'Cannot delete last version' : 'Delete version'}
-                    className="p-1 text-red-600 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    🗑
-                  </button>
-                </div>
-              )}
+              <div className="flex gap-1 ml-2">
+                <button
+                  onClick={(e) => handleDownload(version.id, e)}
+                  disabled={downloadingId === version.id || actionLoading}
+                  title="Download version"
+                  className="p-1 text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ↓
+                </button>
+                {isAdmin && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!version.pinned) {
+                          onPin(version.id);
+                        }
+                      }}
+                      disabled={version.pinned || actionLoading}
+                      title={version.pinned ? 'Already pinned' : 'Pin this version'}
+                      className="p-1 text-yellow-600 hover:bg-yellow-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      📌
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(version.id);
+                      }}
+                      disabled={versions.length === 1 || actionLoading}
+                      title={versions.length === 1 ? 'Cannot delete last version' : 'Delete version'}
+                      className="p-1 text-red-600 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      🗑
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         ))}

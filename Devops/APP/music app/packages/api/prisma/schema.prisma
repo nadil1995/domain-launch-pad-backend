@@ -1,0 +1,269 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CONDUCTOR
+  MUSICIAN
+  GUEST
+}
+
+enum ScoreFileType {
+  PDF
+  MUSICXML
+  IMAGE
+}
+
+enum ConcertMemberPermission {
+  VIEWER
+  PERFORMER
+}
+
+enum ConcertMemberStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum InstrumentType {
+  VIOLIN
+  VIOLA
+  CELLO
+  BASS
+  FLUTE
+  OBOE
+  CLARINET
+  BASSOON
+  HORN
+  TRUMPET
+  TROMBONE
+  TUBA
+  HARP
+  PIANO
+  PERCUSSION
+  VOCALS
+  OTHER
+}
+
+enum PerformerRole {
+  SOLOIST
+  FEATURED
+  ENSEMBLE
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  name      String
+  adminId   String
+  createdAt DateTime @default(now())
+
+  admin     User      @relation("GroupAdmin", fields: [adminId], references: [id])
+  members   User[]    @relation("GroupMembers")
+  folders   Folder[]
+  concerts  Concert[]
+
+  @@index([adminId])
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  password     String
+  name         String?
+  role         Role      @default(MUSICIAN)
+  groupId      String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  group                Group?           @relation("GroupMembers", fields: [groupId], references: [id])
+  adminOfGroups        Group[]          @relation("GroupAdmin")
+  uploadedScores       Score[]
+  createdConcerts      Concert[]
+  annotations          Annotation[]
+  concertMemberships   ConcertMember[]
+
+  @@index([groupId])
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  parentId  String?
+  groupId   String
+  createdAt DateTime @default(now())
+
+  parent   Folder?  @relation("FolderTree", fields: [parentId], references: [id])
+  children Folder[] @relation("FolderTree")
+  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  scores   Score[]
+
+  @@index([groupId])
+  @@index([parentId])
+}
+
+model Score {
+  id                String   @id @default(cuid())
+  title             String
+  composer          String?
+  tags              String[] @default([])
+  durationSeconds   Int?
+  key               String?
+  tempo             Int?
+  genre             String?
+  notes             String?
+  folderId          String?
+  createdById       String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  folder        Folder?        @relation(fields: [folderId], references: [id])
+  createdBy     User           @relation(fields: [createdById], references: [id])
+  versions      ScoreVersion[]
+  concertPieces ConcertPiece[]
+  annotations   Annotation[]
+
+  @@index([createdById])
+  @@index([folderId])
+}
+
+model ScoreVersion {
+  id            String        @id @default(cuid())
+  scoreId       String
+  filePath      String
+  fileType      ScoreFileType
+  versionNumber Int
+  pinned        Boolean       @default(false)
+  changeNotes   String?
+  tags          String[]      @default([])
+  createdAt     DateTime      @default(now())
+
+  score         Score              @relation(fields: [scoreId], references: [id], onDelete: Cascade)
+  parts         InstrumentPart[]
+  concertPieces ConcertPiece[]
+
+  @@unique([scoreId, versionNumber])
+  @@index([scoreId])
+}
+
+model InstrumentPart {
+  id             String   @id @default(cuid())
+  scoreVersionId String
+  instrument     String
+  filePath       String
+  createdAt      DateTime @default(now())
+
+  scoreVersion ScoreVersion @relation(fields: [scoreVersionId], references: [id], onDelete: Cascade)
+
+  @@index([scoreVersionId])
+}
+
+model Concert {
+  id          String   @id @default(cuid())
+  title       String
+  date        DateTime
+  location    String?
+  createdById String
+  groupId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User              @relation(fields: [createdById], references: [id])
+  group     Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  pieces    ConcertPiece[]
+  members   ConcertMember[]
+
+  @@index([groupId])
+  @@index([date])
+}
+
+model ConcertPiece {
+  id        String @id @default(cuid())
+  concertId String
+  scoreId   String
+  versionId String
+  order     Int
+
+  concert Concert      @relation(fields: [concertId], references: [id], onDelete: Cascade)
+  score   Score        @relation(fields: [scoreId], references: [id])
+  version ScoreVersion @relation(fields: [versionId], references: [id])
+  instrumentAssignments InstrumentAssignment[]
+  featuredPerformers FeaturedPerformer[]
+
+  @@unique([concertId, order])
+  @@index([concertId])
+}
+
+model Annotation {
+  id          String   @id @default(cuid())
+  userId      String
+  scoreId     String
+  page        Int      @default(1)
+  text        String
+  coordinates Json?
+  createdAt   DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score Score @relation(fields: [scoreId], references: [id], onDelete: Cascade)
+
+  @@index([scoreId, page])
+  @@index([userId])
+}
+
+model ConcertMember {
+  id         String                     @id @default(cuid())
+  concertId  String
+  userId     String
+  permission ConcertMemberPermission    @default(VIEWER)
+  status     ConcertMemberStatus        @default(PENDING)
+  createdAt  DateTime                   @default(now())
+  respondedAt DateTime?
+
+  concert Concert @relation(fields: [concertId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  instrumentAssignments InstrumentAssignment[]
+  featuredRoles FeaturedPerformer[]
+
+  @@unique([concertId, userId])
+  @@index([concertId])
+  @@index([userId])
+}
+
+model InstrumentAssignment {
+  id               String   @id @default(cuid())
+  concertMemberId  String
+  concertPieceId   String
+  instrument       InstrumentType
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  concertMember ConcertMember @relation(fields: [concertMemberId], references: [id], onDelete: Cascade)
+  concertPiece  ConcertPiece  @relation(fields: [concertPieceId], references: [id], onDelete: Cascade)
+
+  @@unique([concertMemberId, concertPieceId])
+  @@index([concertMemberId])
+  @@index([concertPieceId])
+}
+
+model FeaturedPerformer {
+  id               String   @id @default(cuid())
+  concertMemberId  String
+  concertPieceId   String
+  role             PerformerRole
+  description      String?
+  createdAt        DateTime @default(now())
+
+  concertMember ConcertMember @relation(fields: [concertMemberId], references: [id], onDelete: Cascade)
+  concertPiece  ConcertPiece  @relation(fields: [concertPieceId], references: [id], onDelete: Cascade)
+
+  @@unique([concertMemberId, concertPieceId])
+  @@index([concertMemberId])
+  @@index([concertPieceId])
+}

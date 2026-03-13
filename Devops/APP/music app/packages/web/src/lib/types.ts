@@ -39,6 +39,7 @@ export interface ScoreVersion {
   filePath: string;
   pinned: boolean;
   changeNotes?: string | null;
+  tags: string[];
   downloadUrl?: string;
   createdAt: string;
 }
@@ -48,6 +49,11 @@ export interface Score {
   title: string;
   composer?: string | null;
   tags: string[];
+  durationSeconds?: number | null;
+  key?: string | null;
+  tempo?: number | null;
+  genre?: string | null;
+  notes?: string | null;
   folderId?: string | null;
   createdById: string;
   folder?: Folder | null;
@@ -55,6 +61,26 @@ export interface Score {
   versions?: ScoreVersion[];
   createdAt: string;
   updatedAt: string;
+}
+
+// Concert Member Types
+export type ConcertMemberPermission = 'VIEWER' | 'PERFORMER';
+export type ConcertMemberStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+
+export interface ConcertMember {
+  id: string;
+  concertId: string;
+  userId: string;
+  permission: ConcertMemberPermission;
+  status: ConcertMemberStatus;
+  createdAt: string;
+  respondedAt?: string | null;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    role: 'ADMIN' | 'CONDUCTOR' | 'MUSICIAN' | 'GUEST';
+  };
 }
 
 // Concert Types
@@ -68,6 +94,11 @@ export interface ConcertPiece {
     id: string;
     title: string;
     composer?: string;
+    key?: string | null;
+    tempo?: number | null;
+    durationSeconds?: number | null;
+    notes?: string | null;
+    genre?: string | null;
   };
   version: {
     id: string;
@@ -90,6 +121,7 @@ export interface Concert {
     email: string;
   };
   pieces: ConcertPiece[];
+  members?: ConcertMember[];
   createdAt: string;
   updatedAt: string;
 }
@@ -108,4 +140,27 @@ export interface LoginResponse {
 
 export interface RegisterResponse {
   user: User;
+}
+
+// Instrument & Performance Types
+export type InstrumentType = 'VIOLIN' | 'VIOLA' | 'CELLO' | 'BASS' | 'FLUTE' | 'OBOE' | 'CLARINET' | 'BASSOON' | 'HORN' | 'TRUMPET' | 'TROMBONE' | 'TUBA' | 'HARP' | 'PIANO' | 'PERCUSSION' | 'VOCALS' | 'OTHER';
+export type PerformerRole = 'SOLOIST' | 'FEATURED' | 'ENSEMBLE';
+
+export interface InstrumentAssignment {
+  id: string;
+  concertMemberId: string;
+  concertPieceId: string;
+  instrument: InstrumentType;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FeaturedPerformer {
+  id: string;
+  concertMemberId: string;
+  concertPieceId: string;
+  role: PerformerRole;
+  description?: string | null;
+  createdAt: string;
 }

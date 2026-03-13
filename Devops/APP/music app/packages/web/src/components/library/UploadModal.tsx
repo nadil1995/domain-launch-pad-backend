@@ -2,28 +2,40 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api';
-import type { Folder } from '@/lib/types';
+import { parseDuration } from '@/lib/utils';
+import TagInput from '@/components/ui/TagInput';
 
 interface UploadModalProps {
-  folders: Folder[];
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function UploadModal({ folders, onClose, onSuccess }: UploadModalProps) {
+const KEY_OPTIONS = [
+  'C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B',
+  'Cm', 'C#m', 'Dm', 'Ebm', 'Em', 'Fm', 'F#m', 'Gm', 'Abm', 'Am', 'Bbm', 'Bm',
+];
+
+const GENRE_OPTIONS = [
+  'Classical', 'Baroque', 'Romantic', 'Contemporary',
+  'Jazz', 'Pop', 'Rock', 'Folk', 'Other',
+];
+
+export default function UploadModal({ onClose, onSuccess }: UploadModalProps) {
   const [title, setTitle] = useState('');
   const [composer, setComposer] = useState('');
-  const [folderId, setFolderId] = useState<string>('');
-  const [tagsInput, setTagsInput] = useState('');
+  const [duration, setDuration] = useState('');
+  const [key, setKey] = useState('');
+  const [tempo, setTempo] = useState('');
+  const [genre, setGenre] = useState('');
+  const [notes, setNotes] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<'form' | 'uploading'>('form');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      // File type validation
       const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'text/xml', 'application/xml'];
       const ALLOWED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.xml', '.musicxml'];
 
@@ -51,43 +63,54 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
       return;
     }
 
-    if (!file) {
-      setError('Please select a file');
+    if (!composer.trim()) {
+      setError('Artist/Composer is required');
       return;
     }
 
     setLoading(true);
     setError(null);
-    setStep('uploading');
 
     try {
-      // Step 1: Create the score
-      const tags = tagsInput
-        .split(',')
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0);
+      const durationSeconds = duration ? parseDuration(duration) : undefined;
+      if (duration && !durationSeconds) {
+        setError('Duration must be in mm:ss format (e.g., 4:33)');
+        setLoading(false);
+        return;
+      }
 
+      // Create the score with metadata
       const scoreResponse = await api.createScore(
         title,
         composer || undefined,
-        folderId || undefined,
-        tags.length > 0 ? tags : undefined
+        undefined, // no folder
+        tags.length > 0 ? tags : undefined,
+        durationSeconds || undefined,
+        key || undefined,
+        tempo ? parseInt(tempo) : undefined,
+        genre || undefined,
+        notes || undefined
       );
 
-      // Step 2: Upload the file
-      await api.uploadScoreVersion(scoreResponse.id, file);
+      // If file is provided, upload it
+      if (file) {
+        await api.uploadScoreVersion(scoreResponse.id, file);
+      }
 
-      // Success!
+      // Reset form
       setTitle('');
       setComposer('');
-      setFolderId('');
-      setTagsInput('');
+      setDuration('');
+      setKey('');
+      setTempo('');
+      setGenre('');
+      setNotes('');
+      setTags([]);
       setFile(null);
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
-      setStep('form');
+      setError(err instanceof Error ? err.message : 'Failed to add song');
     } finally {
       setLoading(false);
     }
@@ -106,7 +129,7 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
     >
       <div className="bg-brand-surface border border-brand-border rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-brand-surface border-b border-brand-border p-6 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-white">📤 Upload Score</h2>
+          <h2 className="text-2xl font-bold text-white">🎵 Add New Song</h2>
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-slate-300 text-2xl leading-none transition-colors"
@@ -122,114 +145,139 @@ export default function UploadModal({ folders, onClose, onSuccess }: UploadModal
             </div>
           )}
 
-          {step === 'form' ? (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g., Moonlight Sonata"
-                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
-                  disabled={loading}
-                />
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Title *</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Song title"
+              className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
+              disabled={loading}
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Composer
-                </label>
-                <input
-                  type="text"
-                  value={composer}
-                  onChange={(e) => setComposer(e.target.value)}
-                  placeholder="e.g., Ludwig van Beethoven"
-                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
-                  disabled={loading}
-                />
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Artist *</label>
+            <input
+              type="text"
+              value={composer}
+              onChange={(e) => setComposer(e.target.value)}
+              placeholder="Composer or artist name"
+              className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
+              disabled={loading}
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Folder
-                </label>
-                <select
-                  value={folderId}
-                  onChange={(e) => setFolderId(e.target.value)}
-                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
-                  disabled={loading}
-                >
-                  <option value="" className="bg-brand-card text-white">Root (no folder)</option>
-                  {folders.map((folder) => (
-                    <option key={folder.id} value={folder.id} className="bg-brand-card text-white">
-                      {folder.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Tags (comma-separated)
-                </label>
-                <input
-                  type="text"
-                  value={tagsInput}
-                  onChange={(e) => setTagsInput(e.target.value)}
-                  placeholder="e.g., classical, piano, romantic"
-                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
-                  disabled={loading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  File *
-                </label>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  accept=".pdf,.xml,.musicxml,.png,.jpg,.jpeg"
-                  className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition file:text-slate-300 file:bg-brand-border file:border-0 file:px-2 file:py-1 file:rounded"
-                  disabled={loading}
-                />
-                <p className="text-xs text-slate-500 mt-1">
-                  Supported: PDF, MusicXML, PNG, JPG
-                </p>
-                {file && <p className="text-sm text-green-400 mt-2">✓ {file.name}</p>}
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  disabled={loading}
-                  className="flex-1 px-4 py-2 border border-brand-border text-slate-300 hover:text-white hover:border-indigo-500/50 hover:bg-brand-card rounded-lg transition-all disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !title.trim() || !file}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50"
-                >
-                  {loading ? 'Uploading...' : 'Upload'}
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="py-8 text-center">
-              <div className="inline-block">
-                <div className="animate-spin">
-                  <div className="w-12 h-12 rounded-full border-4 border-indigo-500 border-t-transparent"></div>
-                </div>
-              </div>
-              <p className="mt-4 text-slate-400">Uploading your score...</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Duration (mm:ss)</label>
+              <input
+                type="text"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                placeholder="3:45"
+                className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
+                disabled={loading}
+              />
             </div>
-          )}
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Key</label>
+              <select
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+                className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
+                disabled={loading}
+              >
+                <option value="">Select key</option>
+                {KEY_OPTIONS.map((k) => (
+                  <option key={k} value={k}>{k}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Tempo (BPM)</label>
+              <input
+                type="number"
+                value={tempo}
+                onChange={(e) => setTempo(e.target.value)}
+                placeholder="120"
+                className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Genre</label>
+              <select
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
+                className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
+                disabled={loading}
+              >
+                <option value="">Select genre</option>
+                {GENRE_OPTIONS.map((g) => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Notes</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Personal notes about this song..."
+              rows={3}
+              className="w-full px-4 py-2 bg-brand-card border border-brand-border rounded-lg text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Tags</label>
+            <TagInput
+              tags={tags}
+              onChange={setTags}
+              disabled={loading}
+              placeholder="Add tags to organize your songs..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Audio/Score File (Optional)</label>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              accept=".pdf,.xml,.musicxml,.png,.jpg,.jpeg"
+              className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-brand-card file:text-slate-300 file:cursor-pointer hover:file:bg-brand-border transition"
+              disabled={loading}
+            />
+            {file && (
+              <p className="text-xs text-slate-400 mt-2">Selected: {file.name}</p>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 px-4 py-2 border border-brand-border text-slate-300 hover:text-white hover:border-indigo-500/50 hover:bg-brand-card rounded-lg transition-all disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || !title.trim() || !composer.trim()}
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50"
+            >
+              {loading ? 'Adding...' : 'Add Song'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

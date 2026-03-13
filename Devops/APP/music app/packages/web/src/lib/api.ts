@@ -157,13 +157,23 @@ class ApiClient {
     title: string,
     composer?: string,
     folderId?: string,
-    tags?: string[]
+    tags?: string[],
+    durationSeconds?: number,
+    key?: string,
+    tempo?: number,
+    genre?: string,
+    notes?: string
   ): Promise<any> {
     return this.request('POST', '/scores', {
       title,
       ...(composer && { composer }),
       ...(folderId && { folderId }),
       ...(tags && { tags }),
+      ...(durationSeconds !== undefined && { durationSeconds }),
+      ...(key && { key }),
+      ...(tempo !== undefined && { tempo }),
+      ...(genre && { genre }),
+      ...(notes && { notes }),
     });
   }
 
@@ -171,12 +181,22 @@ class ApiClient {
     id: string,
     title?: string,
     composer?: string,
-    tags?: string[]
+    tags?: string[],
+    durationSeconds?: number,
+    key?: string,
+    tempo?: number,
+    genre?: string,
+    notes?: string
   ): Promise<any> {
     return this.request('PATCH', `/scores/${id}`, {
       ...(title && { title }),
       ...(composer && { composer }),
       ...(tags && { tags }),
+      ...(durationSeconds !== undefined && { durationSeconds }),
+      ...(key && { key }),
+      ...(tempo !== undefined && { tempo }),
+      ...(genre && { genre }),
+      ...(notes && { notes }),
     });
   }
 
@@ -191,12 +211,16 @@ class ApiClient {
   async uploadScoreVersion(
     scoreId: string,
     file: File,
-    changeNotes?: string
+    changeNotes?: string,
+    tags?: string[]
   ): Promise<any> {
     const formData = new FormData();
     formData.append('file', file);
     if (changeNotes) {
       formData.append('changeNotes', changeNotes);
+    }
+    if (tags) {
+      formData.append('tags', JSON.stringify(tags));
     }
 
     const response = await fetch(`${this.baseUrl}/api/v1/scores/${scoreId}/upload`, {
@@ -291,6 +315,48 @@ class ApiClient {
     return this.request('PATCH', `/concerts/${concertId}/pieces/reorder`, { pieces });
   }
 
+  // Concert member endpoints
+  async getConcertMembers(concertId: string): Promise<any[]> {
+    return this.request('GET', `/concerts/${concertId}/members`);
+  }
+
+  async addConcertMember(
+    concertId: string,
+    userId: string,
+    permission: 'VIEWER' | 'PERFORMER' = 'VIEWER'
+  ): Promise<any> {
+    return this.request('POST', `/concerts/${concertId}/members`, {
+      userId,
+      permission,
+    });
+  }
+
+  async updateConcertMemberPermission(
+    concertId: string,
+    userId: string,
+    permission: 'VIEWER' | 'PERFORMER'
+  ): Promise<any> {
+    return this.request('PATCH', `/concerts/${concertId}/members/${userId}`, {
+      permission,
+    });
+  }
+
+  async removeConcertMember(concertId: string, userId: string): Promise<void> {
+    await this.request('DELETE', `/concerts/${concertId}/members/${userId}`);
+  }
+
+  async requestJoinConcert(concertId: string): Promise<any> {
+    return this.request('POST', `/concerts/${concertId}/request-join`);
+  }
+
+  async acceptJoinRequest(concertId: string, userId: string): Promise<any> {
+    return this.request('POST', `/concerts/${concertId}/join-requests/${userId}/accept`);
+  }
+
+  async rejectJoinRequest(concertId: string, userId: string): Promise<void> {
+    await this.request('DELETE', `/concerts/${concertId}/join-requests/${userId}`);
+  }
+
   // Settings endpoints
   async updateProfile(name?: string, password?: string): Promise<any> {
     return this.request('PATCH', '/users/me', {
@@ -303,8 +369,64 @@ class ApiClient {
     return this.request('GET', '/users/me/group');
   }
 
+  async searchPlayers(query: string): Promise<{ users: any[] }> {
+    return this.request('GET', `/users/search/players?q=${encodeURIComponent(query)}`);
+  }
+
+  async addPlayersToGroup(groupId: string, userIds: string[]): Promise<any> {
+    return this.request('PATCH', `/users/${groupId}/members`, { userIds });
+  }
+
+  async removePlayersFromGroup(groupId: string, userIds: string[]): Promise<any> {
+    return this.request('PATCH', `/users/${groupId}/members`, { removeUserIds: userIds });
+  }
+
   async updateGroupMembers(groupId: string, removeUserIds: string[]): Promise<any> {
     return this.request('PATCH', `/users/${groupId}/members`, { removeUserIds });
+  }
+
+  // Instrument assignment endpoints
+  async assignInstrument(
+    concertId: string,
+    memberId: string,
+    pieceId: string,
+    instrument: string,
+    notes?: string
+  ): Promise<any> {
+    return this.request('POST', `/concerts/${concertId}/members/${memberId}/instruments/${pieceId}`, {
+      instrument,
+      ...(notes && { notes }),
+    });
+  }
+
+  async removeInstrumentAssignment(
+    concertId: string,
+    memberId: string,
+    pieceId: string
+  ): Promise<void> {
+    await this.request('DELETE', `/concerts/${concertId}/members/${memberId}/instruments/${pieceId}`);
+  }
+
+  // Featured performer endpoints
+  async markFeaturedPerformer(
+    concertId: string,
+    memberId: string,
+    pieceId: string,
+    role: string,
+    description?: string
+  ): Promise<any> {
+    return this.request('POST', `/concerts/${concertId}/members/${memberId}/featured/${pieceId}`, {
+      role,
+      ...(description && { description }),
+    });
+  }
+
+  async removeFeaturedPerformer(
+    concertId: string,
+    memberId: string,
+    pieceId: string
+  ): Promise<void> {
+    await this.request('DELETE', `/concerts/${concertId}/members/${memberId}/featured/${pieceId}`);
   }
 }
 
