@@ -1,0 +1,30 @@
+# Secrets — never commit these
+.env
+*.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
+.localized
+
+# Node
+node_modules/
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Data files
+*.csv
+*.pdf
+data/raw/
+data/processed/
+
+# Logs
+logs/
+*.log

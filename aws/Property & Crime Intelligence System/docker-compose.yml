@@ -1,0 +1,56 @@
+services:
+  db-init:
+    image: postgres:15-alpine
+    container_name: pci_db_init
+    env_file: .env
+    volumes:
+      - ./database/schema.sql:/schema.sql
+    command: >
+      sh -c "psql $$DATABASE_URL -f /schema.sql"
+    profiles:
+      - init
+
+  scraper:
+    build:
+      context: .
+      dockerfile: scrapers/Dockerfile
+    container_name: pci_scraper
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./scrapers:/app/scrapers
+    command: python scrapers/run_all.py
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: scripts/Dockerfile
+    container_name: pci_pipeline
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./scripts:/app/scripts
+    depends_on:
+      scraper:
+        condition: service_completed_successfully
+    command: >
+      sh -c "
+        python scripts/extract_crime.py &&
+        python scripts/clean_properties.py &&
+        python scripts/clean_crime.py &&
+        python scripts/merge_data.py &&
+        python scripts/scoring.py
+      "
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: dashboard/Dockerfile
+    container_name: pci_dashboard
+    env_file: .env
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./dashboard:/app/dashboard
+      - ./data:/app/data
+    command: streamlit run dashboard/app.py --server.port=8501 --server.address=0.0.0.0
